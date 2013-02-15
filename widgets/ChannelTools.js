@@ -29,7 +29,7 @@
 Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
 
     /** i18n **/
-    titleText: 'Channel list',
+    titleText: 'Canales Temáticos',
     loadText: 'Load',
     closeText: 'Close',
 

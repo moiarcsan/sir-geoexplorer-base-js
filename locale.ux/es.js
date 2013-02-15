@@ -199,7 +199,7 @@ GeoExt.Lang.add("es",{
     },
 
     "Viewer.dialog.ChannelTools.prototype":{
-        titleText: "Canales",
+        titleText: "Canales Temáticos",
         loadText: 'Cargar',
         closeText: 'Cerrar'
     },
@@ -210,8 +210,8 @@ GeoExt.Lang.add("es",{
     },
 
     "gxp.plugins.ChannelToolsAction.prototype":{
-        buttonText: 'Canales',
-        menuText: 'Canales',
+        buttonText: 'Canales Temáticos',
+        menuText: 'Canales Temáticos',
         tooltip: 'Cargar canales de capas'
     },
     

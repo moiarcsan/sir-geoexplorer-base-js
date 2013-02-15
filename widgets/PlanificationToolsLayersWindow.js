@@ -44,7 +44,7 @@ Viewer.dialog.PlanificationToolsLayersWindow = Ext.extend(Ext.Window, {
         this.restBaseUrl = config.restBaseUrl;
 
         Viewer.dialog.PlanificationToolsLayersWindow.superclass.constructor.call(this, Ext.apply({
-            title: 'Instrumentos de planificación',
+            title: 'Instrumentos de Planificación Territorial (IPT)',
             width: 320,
             height: 400,
             layout: 'fit',
@@ -132,7 +132,7 @@ Viewer.widgets.PlanificationToolsLayersTree = Ext.extend(Ext.tree.TreePanel, {
         // Planos comunales
         rootNode.appendChild(this.prcNode = new Ext.tree.TreeNode({
             id: 'node-prc',
-            text: 'Planos comunales',
+            text: 'Planos Reguladores Comunales (PRC)',
             leaf: false,
             type: 'prc',
             expanded: true
@@ -141,7 +141,7 @@ Viewer.widgets.PlanificationToolsLayersTree = Ext.extend(Ext.tree.TreePanel, {
         // Planos intercomunales
         rootNode.appendChild(this.priNode = new Ext.tree.TreeNode({
             id: 'node-pri',
-            text: 'Planos intercomunales',
+            text: 'Planos Reguladores Intercomunales (PRI)',
             leaf: false,
             type: 'pri',
             expanded: true
@@ -191,6 +191,8 @@ Viewer.widgets.PlanificationToolsLayersTree = Ext.extend(Ext.tree.TreePanel, {
         if (node.isLeaf()) {
             node.attributes.checked = false;
         }
+        var s = node.text.split(':');
+        node.text = s.length > 1 ? s[1] : node.text;
     },
 
     onNodeLoaded: function(treeLoader, node, response) {

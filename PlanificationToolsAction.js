@@ -54,7 +54,7 @@ gxp.plugins.PlanificationToolsAction = Ext.extend(gxp.plugins.Tool, {
     /** api: config[buttonText]
      *  ``String`` Text to show next to the zoom button
      */
-    buttonText: 'Instrumentos de planificación',
+    buttonText: 'Instrumentos de Planificación',
      
     /** api: config[menuText]
      *  ``String``

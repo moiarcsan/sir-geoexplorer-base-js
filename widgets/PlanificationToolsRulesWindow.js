@@ -37,7 +37,7 @@ Viewer.dialog.PlanificationToolsRulesWindow = Ext.extend(Ext.Window, {
         config = config || {};
 
         Viewer.dialog.PlanificationToolsRulesWindow.superclass.constructor.call(this, Ext.apply({
-            title: 'Instrumentos de planificación',
+            title: 'Leyenda de IPT',
             width: 240,
             height: 400,
             layout: 'fit',
@@ -113,16 +113,17 @@ Viewer.widgets.PlanificationToolsLayerRules = Ext.extend(Ext.Panel, {
 
         callback = typeof(callback) == 'function' ? callback : function() {};
 
-        var params = [
+        var url = window.app.sources.local.url;
+
+        url += '?' + [
             'TRANSPARENT=TRUE',
             'SERVICE=WMS',
-            'VERSION=1.1.1',
+            'VERSION=' + window.app.sources.local.baseParams.VERSION,
             'REQUEST=GetLegendGraphic',
-            'EXCEPTIONS=application%2Fvnd.ogc.se_xml',
+            'EXCEPTIONS=application/vnd.ogc.se_xml',
             'LAYER=' + layer.name || layer.title,
-            'transparent=true',
-            'format=image%2Fpng',
-            'legend_options=fontAntiAliasing%3Atrue%3BfontSize%3A11%3BfontName%3AArial',
+            'format=image/png',
+            'legend_options=fontAntiAliasing:true;fontSize:11;fontName:Arial',
             'SCALE=1091958.1364361627'
         ].join('&');
 
@@ -135,7 +136,7 @@ Viewer.widgets.PlanificationToolsLayerRules = Ext.extend(Ext.Panel, {
                 xtype: 'panel',
                 autoScroll: true,
                 padding: '8px 15px',
-                html: '<img src="' + layer.url + params + '" class="" />'
+                html: '<img src="' + url + '" class="" />'
             }
         };
 

@@ -54,19 +54,19 @@ gxp.plugins.ChannelToolsAction = Ext.extend(gxp.plugins.Tool, {
     /** api: config[buttonText]
      *  ``String`` Text to show button
      */
-    buttonText: 'Canales',
+    buttonText: 'Canales Temáticos',
      
     /** api: config[menuText]
      *  ``String``
      *  Text for show in menu item (i18n).
      */
-    menuText: 'Canales',
+    menuText: 'Canales Temáticos',
 
     /** api: config[tooltip]
      *  ``String``
      *  Text for channel tool tooltip (i18n).
      */
-    tooltip: 'Canales',
+    tooltip: 'Canales Temáticos',
     
     /** private: property[iconCls]
      */
@@ -110,7 +110,7 @@ gxp.plugins.ChannelToolsAction = Ext.extend(gxp.plugins.Tool, {
                     ds.hide();
                 } else {
                     ds.show();
-                    Viewer.trackUrl('modules/Canales');
+                    Viewer.trackUrl('modules/Canales_Tematicos');
                 }
 
             },
