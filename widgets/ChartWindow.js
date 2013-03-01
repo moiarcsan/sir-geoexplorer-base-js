@@ -58,19 +58,17 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
 
         this.listeners = {
             beforerender: this.onBeforeRender,
+            show: this._onShow,
             scope: this
         };
 
         Viewer.dialog.ChartWindow.superclass.constructor.call(this, Ext.apply({
             cls: 'vw_chart_window',
-            constrainHeader: true,
             title: this.title,
             width: 1000,
             height: 300,
             closeAction: 'hide',
-            layout: {
-                type: 'column'                
-            },          
+            layout: 'column',
             maximizable: true
         }, config));
 
@@ -131,7 +129,11 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
         }
         return data;
     },
-   
+    _onShow: function () {
+    },
+
+    onHide: function () {
+    },
     updateGroupBy: function () {
     	var sector = Ext.getCmp('sectorId').getValue();
     	var fuente = Ext.getCmp('fuenteId').getValue();
@@ -297,7 +299,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
         	
         };*/
 
-        var columns = [
+        var c = [
             {
                 xtype: 'form',
                 title: chartWindow.topTitleText,
@@ -526,11 +528,9 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             
             {
                	//region: 'center',
-            	columnWidth: .5,
+            	columnWidth: .60,
                	margins: '5 5 0 0',
                	xtype: 'gvisualization',
-                flex:1,
-                layout: "fit",
                	id: 'lineChartId',
                	visualizationPkgs: {'corechart': 'ColumnChart'},
                	visualizationPkg: 'corechart',
@@ -568,13 +568,11 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                                
             },
             {
-                xtype: 'gvisualization',
+           		xtype: 'gvisualization',
            		//region: 'east',
-           		columnWidth: .5,
+           		columnWidth: .40,
                	margins: '5 5 0 0',
-               	//layout: 'fit',
-                flex:1,
-                layout: "fit",
+               	layout: 'fit',
                	id: 'pieChartId',
                	html: 'Cargando...',
                	buttons: [
@@ -591,14 +589,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                	visualizationCfg: {
                		title: 'Invertido en sectores',
                		pieSliceText: 'label',
-               		pieResidualSliceLabel: this.porcionOtrosText,
-                    height: "100%",
-                    legend: {
-                        position: "none"
-                    },
-                    chartArea: {
-                        width: "100%"
-                    }
+               		pieResidualSliceLabel: this.porcionOtrosText
                	},
                	store: this.pieStore,
                	columns: [
@@ -618,7 +609,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
            	}           	
         ];
 
-        chartWindow.add(columns);
+        chartWindow.add(c);
         chartWindow.on('resize', Ext.getCmp('lineChartId').onParentResize, Ext.getCmp('lineChartId'));
         chartWindow.on('resize', Ext.getCmp('pieChartId').onParentResize, Ext.getCmp('pieChartId'));
     },
