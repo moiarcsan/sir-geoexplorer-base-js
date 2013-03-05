@@ -66,7 +66,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             cls: 'vw_chart_window',
             title: this.title,
             width: 1000,
-            height: 300,
+            height: 600,
             closeAction: 'hide',
             layout: 'column',
             maximizable: true
@@ -148,161 +148,220 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     	if (sector === 'Todos') {
     		arrayCampos.push(['sector', 'Sector']);
     	}
-    	store.loadData(arrayCampos, false);
-    	
-    	
-    	/*store.clearFilter(true);
-    	store.filter({
-    		fn: function (record) {
-    			console.log("Registro " + record.get('idCampo') +  " aceptado: " + (arrayCampos.indexOf(record.get('idCampo')) != -1));
-    			return arrayCampos.indexOf(record.get('idCampo')) != -1;
-    		},
-    		scope: this
-    	});
-    	if (combobox) {
-    		combobox.setValue('nivelTerritorial');    		
-    	}*/
-    	
-    	
-   
-    	
-    	
+    	store.loadData(arrayCampos, false);   
     },
 
     onBeforeRender: function () {
-        var chartWindow = this;
-        
-        var sourceStore = new Ext.data.Store({
-        	reader: new Ext.data.JsonReader({
-        		fields: ['fuente'],
-        		root: 'data'
-        	}),
-        	proxy: new Ext.data.HttpProxy({
-        		url: chartWindow.baseUrl + '/inversion/getFuentes'
-        	}),
-        	remoteSort: true,
-        	autoLoad: false,
-        	listeners: {
-        		load: function (store, records, options) {
-        			
-        	 		var fuenteCombo = Ext.getCmp('fuenteId');
-        	 		fuenteCombo.setValue(records[0].get('fuente'));
-        	 		fuenteCombo.fireEvent('select', fuenteCombo, records[0], 0);
-        		}        	
-        	}
+        var c = [
+            {
+                xtype: "panel",
+                layout: {
+                    type:"vbox",
+                    align: "fit",
+                    pack: "start"
+                },               
+                width: 350,
+                items :[
+                    this._createSearchForm(),
+                    this._createBarChart()   
+
+                ]
+            },            
+            this._createAreaChart()
+        ];
+
+        this.add(c);
+        this.on('resize', Ext.getCmp('lineChartId').onParentResize, Ext.getCmp('lineChartId'));
+        this.on('resize', Ext.getCmp('pieChartId').onParentResize, Ext.getCmp('pieChartId'));
+    },
+
+    _createBarChart : function() {
+        return {
+                //region: 'center',
+                cls: "smallChart",
+                margins: '5 5 0 0',
+                columnWidth: 1,
+                xtype: 'gvisualization',
+                id: 'lineChartId',
+                visualizationPkgs: {'corechart': 'ColumnChart'},
+                visualizationPkg: 'corechart',
+                html: 'Cargando...',
+                flex:1,
+                
+                visualizationCfg: {
+                    
+                    vAxis: {
+                        title: this.xAxisTitle
+                    },
+                    hAxis: {
+                        textStyle: {
+                            fontSize: 7
+                        }
+                    },
+                    legend: {
+                        position: 'in'
+                    }
+                },
+                store: this.barStore,
+                columns: [
+                         {dataIndex: 'groupBy', label:''}, 
+                         {dataIndex: 'monto', label: 'Monto'},
+                         {
+                             tooltip:true,
+                             fields: ['groupBy', 'monto', 'numProyectos'],
+                             
+                             template: new Ext.Template('{groupBy}: {monto:number("0.000/i")} M$ en {numProyectos} iniciativas',
+                                 {
+                                    compiled: true
+                                 }) 
+                         }
+                ]                   
+                               
+            };
+    },
+
+    _createAreaChart : function() {
+        return {
+                xtype: 'gvisualization',
+                //region: 'east',
+                columnWidth: 1,
+                cls: "chart",
+                margins: '5 5 0 0',
+                layout: 'fit',
+                id: 'pieChartId',
+                html: 'Cargando...',
+                flex:1,
+                buttons: [
+                          {
+                              id: 'iniciatiavasGeoId',
+                              text: this.geoButtonText,
+                              handler: this.georeferenceInitiatives,
+                              scope: this
+                          }
+                ],
+                
+                visualizationPkgs: {'corechart': 'PieChart'},
+                visualizationPkg: 'corechart',
+                visualizationCfg: {
+                    title: 'Invertido en sectores',
+                    pieSliceText: 'label',
+                    pieResidueSliceLabel: this.porcionOtrosText,
+                    chartArea : {
+                        width: "90%",
+                         height: "90%"
+                    }
+                },
+                store: this.pieStore,
+                columns: [
+                          {dataIndex: 'groupBy', label:'Sectores'}, 
+                          {dataIndex: 'monto', label: 'Monto'},
+                          {
+                              tooltip:true,
+                              fields: ['monto', 'numProyectos'],
+                              
+                              template: new Ext.Template('Monto: {monto:number("0,000/i")} M$ en {numProyectos} iniciativas',
+                                      {
+                                  compiled: true
+                                      }) 
+                          }
+                  ]                 
+                       
+            };
+    },
+
+    _createSourceStore : function() {
+        return new Ext.data.Store({
+            reader: new Ext.data.JsonReader({
+                fields: ['fuente'],
+                root: 'data'
+            }),
+            proxy: new Ext.data.HttpProxy({
+                url: this.baseUrl + '/inversion/getFuentes'
+            }),
+            remoteSort: true,
+            autoLoad: false,
+            listeners: {
+                load: function (store, records, options) {
+                    
+                    var fuenteCombo = Ext.getCmp('fuenteId');
+                    fuenteCombo.setValue(records[0].get('fuente'));
+                    fuenteCombo.fireEvent('select', fuenteCombo, records[0], 0);
+                },
+                scope: this      
+            }
         });
-        
-        var yearsStore = new Ext.data.Store({
+    },
+
+    _createYearStore : function () {
+        return  new Ext.data.Store({
             reader: new Ext.data.JsonReader({
                 fields : ['anyo'],
                 root: 'data'
             }),
             proxy: new Ext.data.HttpProxy({
-                url: chartWindow.baseUrl + '/inversion/getAnyos'
+                url: this.baseUrl + '/inversion/getAnyos'
             }),
             remoteSort: true,
             autoLoad: true,
             baseParams: {
-        		tipoProyecto: 'PREINVERSION'
-        	},
-        	listeners: {
-        		load: function (store, records, options) {
-        			// Autoselect first result
-        		
-        			var anyoCombo = Ext.getCmp('anyoId');
-        			
-        			if (records.length != 0) {
-        				anyoCombo.setValue(records[0].get('anyo'));
-        				anyoCombo.fireEvent('select', anyoCombo, records[0], 0);
-        			}
-        		}
-        	}        	
+                tipoProyecto: 'PREINVERSION'
+            },
+            listeners: {
+                load: function (store, records, options) {
+                    // Autoselect first result
+                
+                    var anyoCombo = Ext.getCmp('anyoId');
+                    
+                    if (records.length != 0) {
+                        anyoCombo.setValue(records[0].get('anyo'));
+                        anyoCombo.fireEvent('select', anyoCombo, records[0], 0);
+                    }
+                },
+                scope: this 
+            }           
         });
-        
-        var lineStore = new Ext.data.Store({
-        	reader: new Ext.data.JsonReader({
-        		fields: ['linea'],
-        		root: 'data'
-        	}),
-        	proxy: new Ext.data.HttpProxy({
-        		url: chartWindow.baseUrl + '/inversion/getLineasFinancieras'
-        	}),
-        	remotSort: true,
-        	autoLoad: false,
-        	listeners: {
-        		load: function (store, records, options) {
-        			
-        			var lineaCombo = Ext.getCmp('lineaId');
-        			if (records.length != 0) {
-        				lineaCombo.setValue(records[0].get('linea'));
-        				lineaCombo.fireEvent('select', lineaCombo, records[0], 0);
-        			}
-        		}
-        	}
-        });
-        
-        var sectorStore = new Ext.data.Store({
-        	reader: new Ext.data.JsonReader({
-        		fields: ['sector'],
-        		root: 'data'
-        	}),
-        	proxy: new Ext.data.HttpProxy({
-        		url: chartWindow.baseUrl + '/inversion/getSectores'
-        	}),
-        	remoteSort: true,
-        	autoload: false,
-        	listeners: {
-        		load: function(store, records, options) {
-        			
-        			var sectorCombo = Ext.getCmp('sectorId');
-        			if (records.length != 0) {
-        				sectorCombo.setValue(records[0].get('sector'));
-        				sectorCombo.fireEvent('select', sectorCombo, records[0], 0);
-        			}
-        			
-        		}
-        	}
-        });
-        
-        var nivelTerritorialStore = new Ext.data.Store({
-        	reader: new Ext.data.JsonReader({
-        		fields:['nivelTerritorial'],
-        		root: 'data'
-        	}),
-        	proxy: new Ext.data.HttpProxy({
-        		url: chartWindow.baseUrl + '/inversion/getNivelesTerritoriales'
-        	}),
-        	remoteSort: true
-     	
-        });
-        
-        var agruparPorStore = new Ext.data.ArrayStore({
-        		storeId: 'agruparPorStoreId',
-        		idIndex: 0,
-        		fields: ['idCampo', 'nombreCampo'],
-        		autoload: false,
-        		listeners: {
-        			load: function(store, records, options) {
-        				var combo = Ext.getCmp('agruparPorId');
-        				if (combo) {
-        					combo.setValue(records[0].get('idCampo'));
-        					combo.fireEvent('select', combo, records[0], 0);
-        				}
-        			}
-        		}
-        	});
-        
-        /*var chartOptions = {
-        	is3D: true,
-        	dfs:dfs
-        	
-        	
-        };*/
+    },
 
-        var c = [
-            {
+    _createSectorStore : function () {
+        return new Ext.data.Store({
+            reader: new Ext.data.JsonReader({
+                fields: ['sector'],
+                root: 'data'
+            }),
+            proxy: new Ext.data.HttpProxy({
+                url: this.baseUrl + '/inversion/getSectores'
+            }),
+            remoteSort: true,
+            autoload: false,
+            listeners: {
+                load: function(store, records, options) {
+                    
+                    var sectorCombo = Ext.getCmp('sectorId');
+                    if (records.length != 0) {
+                        sectorCombo.setValue(records[0].get('sector'));
+                        sectorCombo.fireEvent('select', sectorCombo, records[0], 0);
+                    }
+                    
+                },
+                scope: this 
+            }
+        });
+    },
+
+    _createSearchForm : function() {
+
+
+        var sourceStore = this._createSourceStore();        
+        var yearsStore = this._createYearStore();        
+        var lineStore = this._createLineStore();        
+        var sectorStore = this._createSectorStore();        
+        var nivelTerritorialStore = this._createAreaLevelStore();        
+        var agruparPorStore = this._createGroupingStore();
+
+
+        return  {
                 xtype: 'form',
-                title: chartWindow.topTitleText,
+                title: this.topTitleText,
                 //region: 'west',
                 
                 margins: '5 0 0 5',
@@ -310,17 +369,18 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                 id: 'inversion-form-region',
                 labelWidth: 100,
                 defaultType: 'combo',
+                flex:1,
                 items: [
                     {
                         id: 'tipoProyectoId',
-                        fieldLabel: chartWindow.stageText,
+                        fieldLabel: this.stageText,
                         hiddenName: 'tipoProyecto',
                         mode: 'local',
                         triggerAction: 'all',
                         value: 'PREINVERSION',
                         store: [
-                            ['PREINVERSION', chartWindow.proyectosPreinversionText],
-                            ['EJECUCION', chartWindow.proyectosEjecucionText]
+                            ['PREINVERSION', this.proyectosPreinversionText],
+                            ['EJECUCION', this.proyectosEjecucionText]
                         ],
                         valueField: 'value',
                         displayField: 'label',
@@ -329,7 +389,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                         editable: false,
                         listeners: {
                             select: function (e) {
-                    			
+                                
                                 var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
                                 var anyoCombo = Ext.getCmp('anyoId');
                                 
@@ -340,12 +400,13 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                                         tipoProyecto: tipoProyecto
                                     }
                                 });
-                            }
+                            },
+                            scope: this 
                         }
                     },
                     {
                         id: 'anyoId',
-                        fieldLabel: chartWindow.yearText,
+                        fieldLabel: this.yearText,
                         hiddenName: 'anyo',
                         store: yearsStore,
                         valueField: 'anyo',
@@ -354,30 +415,31 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                         editable: false,
                         triggerAction: 'all',
                         listeners: {
-                    		select: function(combo, record, index) {
-                    			var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
-                    			var fuenteCombo = Ext.getCmp('fuenteId');
-                    			var anyo = record.get('anyo');
-                    			
-                    			// reload fuente
-                    			fuenteCombo.store.removeAll();
-                    			fuenteCombo.store.reload({
-                    				params: {
-                    					tipoProyecto: tipoProyecto,
-                    					anyo: anyo
-                    				}
-                    			});
-                    		},
+                            select: function(combo, record, index) {
+                                var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
+                                var fuenteCombo = Ext.getCmp('fuenteId');
+                                var anyo = record.get('anyo');
+                                
+                                // reload fuente
+                                fuenteCombo.store.removeAll();
+                                fuenteCombo.store.reload({
+                                    params: {
+                                        tipoProyecto: tipoProyecto,
+                                        anyo: anyo
+                                    }
+                                });
+                            },
                             focus: function(combo) {
-                            	// setBaseParams
-                            	var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
-                            	combo.store.setBaseParam('tipoProyecto', tipoProyecto);
-                            }
-                    	}
+                                // setBaseParams
+                                var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
+                                combo.store.setBaseParam('tipoProyecto', tipoProyecto);
+                            },
+                            scope: this 
+                        }
                     },
                     {
-                    	id: 'fuenteId',
-                        fieldLabel: chartWindow.sourceText,
+                        id: 'fuenteId',
+                        fieldLabel: this.sourceText,
                         hiddenName: 'fuente',
                         store: sourceStore,
                         valueField: 'fuente',
@@ -386,33 +448,34 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                         editable: false,
                         triggerAction: 'all',
                         listeners: {
-                    		select: function(combo, record, index) {
-                    			// clear financial line combo
-                    			var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
-                    			var fuente = Ext.getCmp('fuenteId').getValue();
-                    			var anyo = Ext.getCmp('anyoId').getValue();
-                    			var lineaCombo = Ext.getCmp('lineaId');
-                    			lineaCombo.store.removeAll();
-                    			lineaCombo.store.reload({
-                    				params: {
-                    					tipoProyecto: tipoProyecto,
-                    					anyo: anyo,
-                    					fuente: fuente
-                    				}
-                    			});
-                    		},
+                            select: function(combo, record, index) {
+                                // clear financial line combo
+                                var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
+                                var fuente = Ext.getCmp('fuenteId').getValue();
+                                var anyo = Ext.getCmp('anyoId').getValue();
+                                var lineaCombo = Ext.getCmp('lineaId');
+                                lineaCombo.store.removeAll();
+                                lineaCombo.store.reload({
+                                    params: {
+                                        tipoProyecto: tipoProyecto,
+                                        anyo: anyo,
+                                        fuente: fuente
+                                    }
+                                });
+                            },
                             focus: function(combo) {
-                            	// setBaseParams
-                            	var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
-                            	var anyo = Ext.getCmp('anyoId').getValue();
-                            	combo.store.setBaseParam('tipoProyecto', tipoProyecto);
-                            	combo.store.setBaseParam('anyo', anyo);
-                            }
-                    	}
+                                // setBaseParams
+                                var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
+                                var anyo = Ext.getCmp('anyoId').getValue();
+                                combo.store.setBaseParam('tipoProyecto', tipoProyecto);
+                                combo.store.setBaseParam('anyo', anyo);
+                            },
+                            scope: this 
+                        }
                     },
                     {
-                    	id: 'lineaId',
-                        fieldLabel: chartWindow.financingLineText,
+                        id: 'lineaId',
+                        fieldLabel: this.financingLineText,
                         hiddenName: 'lineaFinanciera',
                         store: lineStore,
                         valueField: 'linea',
@@ -421,38 +484,39 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                         editable: false,
                         triggerAction: 'all',
                         listeners: {
-                        	select: function(combo, record, index) {
-                        		// clear sector combo
-                    			var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
-                    			var fuente = Ext.getCmp('fuenteId').getValue();
-                    			var anyo = Ext.getCmp('anyoId').getValue();
-                    			var linea = Ext.getCmp('lineaId').getValue();
-                    			var sectorCombo = Ext.getCmp('sectorId');
-                    			
-                    			sectorCombo.store.removeAll();
-                    			sectorCombo.store.reload({
-                    				params: {
-                    					tipoProyecto: tipoProyecto,
-                    					anyo: anyo,
-                    					fuente: fuente,
-                    					lineaFinanciera: linea
-                    				}
-                    			});
-                        	},
+                            select: function(combo, record, index) {
+                                // clear sector combo
+                                var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
+                                var fuente = Ext.getCmp('fuenteId').getValue();
+                                var anyo = Ext.getCmp('anyoId').getValue();
+                                var linea = Ext.getCmp('lineaId').getValue();
+                                var sectorCombo = Ext.getCmp('sectorId');
+                                
+                                sectorCombo.store.removeAll();
+                                sectorCombo.store.reload({
+                                    params: {
+                                        tipoProyecto: tipoProyecto,
+                                        anyo: anyo,
+                                        fuente: fuente,
+                                        lineaFinanciera: linea
+                                    }
+                                });
+                            },
                             focus: function(combo) {
-                            	// setBaseParams
-                            	var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
-                            	var anyo = Ext.getCmp('anyoId').getValue();
-                            	var fuente = Ext.getCmp('fuenteId').getValue();
-                            	combo.store.setBaseParam('tipoProyecto', tipoProyecto);
-                            	combo.store.setBaseParam('anyo', anyo);
-                            	combo.store.setBaseParam('fuente', fuente);
-                            }
+                                // setBaseParams
+                                var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
+                                var anyo = Ext.getCmp('anyoId').getValue();
+                                var fuente = Ext.getCmp('fuenteId').getValue();
+                                combo.store.setBaseParam('tipoProyecto', tipoProyecto);
+                                combo.store.setBaseParam('anyo', anyo);
+                                combo.store.setBaseParam('fuente', fuente);
+                            },
+                            scope: this 
                         }
                     },
                     {
-                    	id: 'sectorId',
-                        fieldLabel: chartWindow.sectorText,
+                        id: 'sectorId',
+                        fieldLabel: this.sectorText,
                         hiddenName: 'sector',
                         store: sectorStore,
                         valueField: 'sector',
@@ -461,26 +525,27 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                         editable: false,
                         triggerAction: 'all',
                         listeners: {
-                        	select: function(combo, record, index) {
-                        		chartWindow.updateGroupBy();
-                        	},
-                        	focus: function(combo) {
-                        		var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
-                    			var fuente = Ext.getCmp('fuenteId').getValue();
-                    			var anyo = Ext.getCmp('anyoId').getValue();
-                    			var linea = Ext.getCmp('lineaId').getValue();
-                    			
-                    			combo.store.setBaseParam(
-                    					'tipoProyecto',tipoProyecto);
-                    			combo.store.setBaseParam('anyo', anyo);
-                    			combo.store.setBaseParam('fuente', fuente);
-                    			combo.store.setBaseParam('lineaFinanciera', linea);
-                        	}
+                            select: function(combo, record, index) {
+                                this.updateGroupBy();
+                            },
+                            focus: function(combo) {
+                                var tipoProyecto = Ext.getCmp('tipoProyectoId').getValue();
+                                var fuente = Ext.getCmp('fuenteId').getValue();
+                                var anyo = Ext.getCmp('anyoId').getValue();
+                                var linea = Ext.getCmp('lineaId').getValue();
+                                
+                                combo.store.setBaseParam(
+                                        'tipoProyecto',tipoProyecto);
+                                combo.store.setBaseParam('anyo', anyo);
+                                combo.store.setBaseParam('fuente', fuente);
+                                combo.store.setBaseParam('lineaFinanciera', linea);
+                            },
+                            scope: this 
                         }
                     },
                     {
-                    	id: 'nivelTerritorialId',
-                        fieldLabel: chartWindow.territorialLevelText,
+                        id: 'nivelTerritorialId',
+                        fieldLabel: this.territorialLevelText,
                         hiddenName: 'nivelTerritorial',
                         store: nivelTerritorialStore,
                         valueField: 'nivelTerritorial',
@@ -493,8 +558,8 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                         
                     },
                     {
-                    	id: 'agruparPorId',
-                        fieldLabel: chartWindow.groupByText,
+                        id: 'agruparPorId',
+                        fieldLabel: this.groupByText,
                         hiddenName: 'agruparPor',
                         store: agruparPorStore,
                         valueField: 'idCampo',
@@ -504,116 +569,88 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                         triggerAction: 'all',
                         mode: 'local',
                         listeners: {
-                        	afterrender: function (combo) {
-                        		chartWindow.updateGroupBy();
-                        	}, 
-                        	focus: function() {
+                            afterrender: function (combo) {
+                                this.updateGroupBy();
+                            }, 
+                            focus: function() {
 
-                        		chartWindow.updateGroupBy();
-                        	}
-                    
-                        }
+                                this.updateGroupBy();
+                            },
+                            scope: this                            
+                        } 
                         
                     }
 
                 ],
                 buttons: [{
-                	scope: this,
-                	text: this.graphicButtonText,
-                	handler: this.graficar
-                	
+                    scope: this,
+                    text: this.graphicButtonText,
+                    handler: this._doChartsCreation
+                    
                 }]
-            },
-          
-            
-            {
-               	//region: 'center',
-            	columnWidth: .60,
-               	margins: '5 5 0 0',
-               	xtype: 'gvisualization',
-               	id: 'lineChartId',
-               	visualizationPkgs: {'corechart': 'ColumnChart'},
-               	visualizationPkg: 'corechart',
-               	html: 'Cargando...',
-               	
-               	visualizationCfg: {
-               		
-               		vAxis: {
-               			title: this.xAxisTitle
-               		},
-               		hAxis: {
-               			textStyle: {
-               				fontSize: 7
-               			}
-               		},
-               		legend: {
-               			position: 'in'
-               		},
-               		chartArea: {width: 'auto'}
-               	},
-               	store: this.barStore,
-               	columns: [
-               	         {dataIndex: 'groupBy', label:''}, 
-               	         {dataIndex: 'monto', label: 'Monto'},
-               	         {
-               	        	 tooltip:true,
-               	        	 fields: ['groupBy', 'monto', 'numProyectos'],
-               	        	 
-               	        	 template: new Ext.Template('{groupBy}: {monto:number("0.000/i")} M$ en {numProyectos} iniciativas',
-               	        		 {
-               	        	 		compiled: true
-               	        		 }) 
-               	         }
-               	]            		
-                               
-            },
-            {
-           		xtype: 'gvisualization',
-           		//region: 'east',
-           		columnWidth: .40,
-               	margins: '5 5 0 0',
-               	layout: 'fit',
-               	id: 'pieChartId',
-               	html: 'Cargando...',
-               	buttons: [
-               	          {
-               	        	  id: 'iniciatiavasGeoId',
-               	        	  text: this.geoButtonText,
-               	        	  handler: this.georeferenceInitiatives,
-               	        	  scope: chartWindow
-               	          }
-               	],
-               	
-               	visualizationPkgs: {'corechart': 'PieChart'},
-               	visualizationPkg: 'corechart',
-               	visualizationCfg: {
-               		title: 'Invertido en sectores',
-               		pieSliceText: 'label',
-               		pieResidualSliceLabel: this.porcionOtrosText
-               	},
-               	store: this.pieStore,
-               	columns: [
-               	          {dataIndex: 'groupBy', label:'Sectores'}, 
-               	          {dataIndex: 'monto', label: 'Monto'},
-               	          {
-               	        	  tooltip:true,
-               	        	  fields: ['monto', 'numProyectos'],
-               	        	  
-               	        	  template: new Ext.Template('Monto: {monto:number("0,000/i")} M$ en {numProyectos} iniciativas',
-               	        			  {
-               	        		  compiled: true
-               	        			  }) 
-               	          }
-                  ]            		
-                       
-           	}           	
-        ];
-
-        chartWindow.add(c);
-        chartWindow.on('resize', Ext.getCmp('lineChartId').onParentResize, Ext.getCmp('lineChartId'));
-        chartWindow.on('resize', Ext.getCmp('pieChartId').onParentResize, Ext.getCmp('pieChartId'));
+            };
     },
-    graficar: function() {
+
+    _createAreaLevelStore : function() {
+        return new Ext.data.Store({
+            reader: new Ext.data.JsonReader({
+                fields:['nivelTerritorial'],
+                root: 'data'
+            }),
+            proxy: new Ext.data.HttpProxy({
+                url: this.baseUrl + '/inversion/getNivelesTerritoriales'
+            }),
+            remoteSort: true
+        
+        });
+    },
+
+    _createGroupingStore : function() {
+        return new Ext.data.ArrayStore({
+                storeId: 'agruparPorStoreId',
+                idIndex: 0,
+                fields: ['idCampo', 'nombreCampo'],
+                autoload: false,
+                listeners: {
+                    load: function(store, records, options) {
+                        var combo = Ext.getCmp('agruparPorId');
+                        if (combo) {
+                            combo.setValue(records[0].get('idCampo'));
+                            combo.fireEvent('select', combo, records[0], 0);
+                        }
+                    },
+                     scope: this 
+                }
+            });
+    },
+
+    _createLineStore : function() {
+        return new Ext.data.Store({
+            reader: new Ext.data.JsonReader({
+                fields: ['linea'],
+                root: 'data'
+            }),
+            proxy: new Ext.data.HttpProxy({
+                url: this.baseUrl + '/inversion/getLineasFinancieras'
+            }),
+            remotSort: true,
+            autoLoad: false,
+            listeners: {
+                load: function (store, records, options) {
+                    
+                    var lineaCombo = Ext.getCmp('lineaId');
+                    if (records.length != 0) {
+                        lineaCombo.setValue(records[0].get('linea'));
+                        lineaCombo.fireEvent('select', lineaCombo, records[0], 0);
+                    }
+                },
+                scope: this 
+            }
+        });
+
+    },
+
+    _doChartsCreation: function() {
     	//var lineChartPanel = Ext.getCmp('chartCenterPanelId');
     	//this.barStore.loadData([['2004',1000,400],['2005',1170,460],['2006',860,580],['2007',1030,540]], false);
     	var values = Ext.getCmp('inversion-form-region').getForm().getValues();
@@ -668,7 +705,6 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     	var responseJson = Ext.util.JSON.decode(response.responseText);
     	var investmentLayers = this.map.getLayersByName(this.LAYER_NAME);
     	var investmentLayer = null;
-    	var chartWindow = this;
     	var baseUrl = this.baseUrl;
     	if (investmentLayers.length == 0) {
             var defaultStyle = new OpenLayers.Style(
@@ -704,13 +740,13 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     		    		var popupWindow = new Viewer.plugins.FichaInversion({
     		    			feature: feature,
     		    			location: feature,
-    		    			baseUrl: chartWindow.baseUrl
+    		    			baseUrl: this.baseUrl
     		    			
     		    		});
     		    		popupWindow.on('close', function(p){
     		    			feature.popupWindow = null;
     		    			this.selectControl.unselect(feature);
-    		    		}, chartWindow);
+    		    		}, this);
     		    		feature.popupWindow = popupWindow;
     		    		
     		    		popupWindow.createPopup();
@@ -722,7 +758,8 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     		    			feature.popupWindow.close();
     		    			feature.popupWindow = null;
     		    		}
-    		    	}
+    		    	},
+                    scope: this 
     		    }
     		});
     		var selector = new OpenLayers.Control.SelectFeature(investmentLayer,{
