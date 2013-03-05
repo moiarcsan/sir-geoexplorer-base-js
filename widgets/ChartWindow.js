@@ -33,8 +33,8 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     baseUrl: '../..',
     layerController: null,
     vectorLayer: null,
-    barStore: null,
-    pieStore: null,
+    _barStore: null,
+    _pieStore: null,
     title: 'Chart window',
     topTitleText: 'SEARCH CRITERIAS',
     stageText: 'State',
@@ -46,6 +46,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     groupByText: "Group by",
     proyectosPreinversionText: 'Preinvesment',
     proyectosEjecucionText: 'PROPIR execution',
+    exchangeChartsText : "Exchange",
     graphicButtonText: 'Render',
     centerTitleText: 'Chart',
     eastTitleText: 'Chart',
@@ -59,6 +60,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
         this.listeners = {
             beforerender: this.onBeforeRender,
             show: this._onShow,
+            resize: this._onResize,
             scope: this
         };
 
@@ -67,6 +69,8 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             title: this.title,
             width: 1000,
             height: 600,
+            minHeight: 400,
+            minWidth: 700,
             closeAction: 'hide',
             layout: 'column',
             maximizable: true
@@ -77,7 +81,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
 
         
         var context = this;
-         this.barStore = new Ext.data.JsonStore({
+         this._barStore = new Ext.data.JsonStore({
         	 url: context.baseUrl + '/inversion/getMontosGroupBy',
         	 storeId: 'barStoreId',
         	 root: 'data',
@@ -89,7 +93,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
              ],
              autoload: false             
          });
-         this.pieStore = new Ext.data.JsonStore({
+         this._pieStore = new Ext.data.JsonStore({
         	 url: context.baseUrl + '/inversion/getMontosGroupBy',
         	 storeId: 'pieStoreId',
         	 root: 'data',
@@ -101,13 +105,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
              ],
              autoload: false             
          });
-         this.on('resize', function() {
-        	 this.items.each(function(i) {
-	                		if (i.rendered) {
-		                		i.setHeight(this.body.getHeight(true));
-		                	}
-	                	}, this);
-         }, this);
+      
          this.map.events.register('preremovelayer', this, this.layerRemoved);
 
         //this.map.addLayer(this.vectorLayer);
@@ -128,6 +126,13 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             data.push([Date.monthNames[i], (Math.floor(Math.random() *  11) + 1) * 100]);
         }
         return data;
+    },
+
+    _onResize : function() {
+        if(!this.hidden) {
+            this.doLayout();
+            this._doChartsCreation();
+        }
     },
     _onShow: function () {
     },
@@ -155,11 +160,8 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
         var c = [
             {
                 xtype: "panel",
-                layout: {
-                    type:"vbox",
-                    align: "fit",
-                    pack: "start"
-                },               
+                layout: "border",
+                padding:0,
                 width: 350,
                 items :[
                     this._createSearchForm(),
@@ -167,29 +169,35 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
 
                 ]
             },            
-            this._createAreaChart()
+            this._createPieChart()
         ];
 
-        this.add(c);
-        this.on('resize', Ext.getCmp('lineChartId').onParentResize, Ext.getCmp('lineChartId'));
-        this.on('resize', Ext.getCmp('pieChartId').onParentResize, Ext.getCmp('pieChartId'));
+        this.add(c);        
     },
 
     _createBarChart : function() {
         return {
                 //region: 'center',
                 cls: "smallChart",
-                margins: '5 5 0 0',
                 columnWidth: 1,
                 xtype: 'gvisualization',
-                id: 'lineChartId',
+                region:"south",
+                height: 250,   
+                id: 'lineChartId',                
                 visualizationPkgs: {'corechart': 'ColumnChart'},
                 visualizationPkg: 'corechart',
                 html: 'Cargando...',
                 flex:1,
+                 buttons: [
+                          {
+                            id:"exchangeChartsBtn",
+                              text: this.exchangeChartsText,
+                              handler: this._exchangeCharts,
+                              scope: this
+                          }
+                ],
                 
-                visualizationCfg: {
-                    
+                visualizationCfg: {                    
                     vAxis: {
                         title: this.xAxisTitle
                     },
@@ -202,7 +210,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                         position: 'in'
                     }
                 },
-                store: this.barStore,
+                store: this._barStore,
                 columns: [
                          {dataIndex: 'groupBy', label:''}, 
                          {dataIndex: 'monto', label: 'Monto'},
@@ -220,13 +228,16 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             };
     },
 
-    _createAreaChart : function() {
+    _exchangeCharts : function() {
+        alert("Not yet implemented");
+    },
+
+    _createPieChart : function() {
         return {
                 xtype: 'gvisualization',
                 //region: 'east',
                 columnWidth: 1,
                 cls: "chart",
-                margins: '5 5 0 0',
                 layout: 'fit',
                 id: 'pieChartId',
                 html: 'Cargando...',
@@ -251,7 +262,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                          height: "90%"
                     }
                 },
-                store: this.pieStore,
+                store: this._pieStore,
                 columns: [
                           {dataIndex: 'groupBy', label:'Sectores'}, 
                           {dataIndex: 'monto', label: 'Monto'},
@@ -363,9 +374,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                 xtype: 'form',
                 title: this.topTitleText,
                 //region: 'west',
-                
-                margins: '5 0 0 5',
-                width: 320,
+                region: "center",                             
                 id: 'inversion-form-region',
                 labelWidth: 100,
                 defaultType: 'combo',
@@ -651,8 +660,11 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     },
 
     _doChartsCreation: function() {
-    	//var lineChartPanel = Ext.getCmp('chartCenterPanelId');
-    	//this.barStore.loadData([['2004',1000,400],['2005',1170,460],['2006',860,580],['2007',1030,540]], false);
+        if(!this.rendered) {
+            // We cant do this yet (the method was called in a resize before things were initialized)
+            return;
+        }
+
     	var values = Ext.getCmp('inversion-form-region').getForm().getValues();
     	var lineChart = Ext.getCmp('lineChartId');
     	var agrupadoPorCombo = Ext.getCmp('agruparPorId');
@@ -673,8 +685,8 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
         pieChart.visualizationCfg.title= pieChartTitle;
         
     	
-    	this.barStore.reload({params: values});
-    	this.pieStore.reload({
+    	this._barStore.reload({params: values});
+    	this._pieStore.reload({
     		params: {
     			'tipoProyecto': values.tipoProyecto,
     			'anyo': values.anyo,

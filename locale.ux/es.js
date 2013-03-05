@@ -255,7 +255,8 @@ GeoExt.Lang.add("es",{
         eastTitleText: 'Gráfico',
         xAxisTitle: "Monto (M$)",
         porcionOtrosText: "Otros",
-        geoButtonText: "Buscar Iniciativas Georreferenciadas"
+        geoButtonText: "Buscar Iniciativas Georreferenciadas",
+        exchangeChartsText:"Intercambiar"
     },
 
     "gxp.plugins.PDFPrintAction.prototype" : {
