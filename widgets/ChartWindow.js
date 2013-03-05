@@ -69,7 +69,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             title: this.title,
             width: 1000,
             height: 600,
-            minHeight: 400,
+            minHeight: 450,
             minWidth: 700,
             closeAction: 'hide',
             layout: 'column',
@@ -378,6 +378,9 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                 id: 'inversion-form-region',
                 labelWidth: 100,
                 defaultType: 'combo',
+                defaults : {
+                    listClass: "vw_chart_window_combo_list"
+                },
                 flex:1,
                 items: [
                     {
