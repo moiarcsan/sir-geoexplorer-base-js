@@ -54,6 +54,9 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     porcionOtrosText: 'Others',
     geoButtonText: 'Search geo referenced initiatives',
 
+    // This is used to know which chart is the big one.
+    _bigChart : null,
+
 
     constructor: function (config) {
 
@@ -135,6 +138,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
         }
     },
     _onShow: function () {
+        this._bigChart="pie"
     },
 
     onHide: function () {
@@ -165,17 +169,17 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                 width: 350,
                 items :[
                     this._createSearchForm(),
-                    this._createBarChart()   
+                    this._createSmallChart()   
 
                 ]
             },            
-            this._createPieChart()
+            this._createBigChart()
         ];
 
         this.add(c);        
     },
 
-    _createBarChart : function() {
+    _createSmallChart : function() {
         return {
                 //region: 'center',
                 cls: "smallChart",
@@ -183,10 +187,10 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                 xtype: 'gvisualization',
                 region:"south",
                 height: 250,   
-                id: 'lineChartId',                
+                id: 'smallChartId',                
                 visualizationPkgs: {'corechart': 'ColumnChart'},
                 visualizationPkg: 'corechart',
-                html: 'Cargando...',
+                html: '<div class="chartLoading">Cargando...</div>',
                 flex:1,
                  buttons: [
                           {
@@ -195,52 +199,58 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                               handler: this._exchangeCharts,
                               scope: this
                           }
-                ],
-                
-                visualizationCfg: {                    
+                ] ,
+                 visualizationCfg: {                    
                     vAxis: {
-                        title: this.xAxisTitle
+                        title: this.xAxisTitle,
+                        textPosition:"in"
                     },
                     hAxis: {
                         textStyle: {
-                            fontSize: 7
+                            fontSize: 8
                         }
                     },
                     legend: {
                         position: 'in'
-                    }
+                    },
+                    title: "Monto invertido en sector"
                 },
                 store: this._barStore,
                 columns: [
-                         {dataIndex: 'groupBy', label:''}, 
-                         {dataIndex: 'monto', label: 'Monto'},
-                         {
-                             tooltip:true,
-                             fields: ['groupBy', 'monto', 'numProyectos'],
-                             
-                             template: new Ext.Template('{groupBy}: {monto:number("0.000/i")} M$ en {numProyectos} iniciativas',
-                                 {
-                                    compiled: true
-                                 }) 
-                         }
-                ]                   
-                               
+                     {dataIndex: 'groupBy', label:''}, 
+                     {dataIndex: 'monto', label: 'Monto'},
+                     {
+                         tooltip:true,
+                         fields: ['groupBy', 'monto', 'numProyectos'],
+                         
+                         template: new Ext.Template('{groupBy}: {monto:number("0.000/i")} M$ en {numProyectos} iniciativas',
+                             {
+                                compiled: true
+                             }) 
+                     }
+                ]                                             
             };
     },
 
     _exchangeCharts : function() {
-        alert("Not yet implemented");
+        if(this._bigChart=="pie") {
+            this._bigChart="bars";
+        } else {
+            this._bigChart="pie"
+        }
+
+        this._doChartsCreation();
     },
 
-    _createPieChart : function() {
+    _createBigChart : function() {
         return {
                 xtype: 'gvisualization',
                 //region: 'east',
                 columnWidth: 1,
                 cls: "chart",
                 layout: 'fit',
-                id: 'pieChartId',
-                html: 'Cargando...',
+                id: 'bigChartId',
+                html: '<div class="chartLoading">Cargando...</div>',
                 flex:1,
                 buttons: [
                           {
@@ -249,12 +259,11 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                               handler: this.georeferenceInitiatives,
                               scope: this
                           }
-                ],
-                
+                ] ,
                 visualizationPkgs: {'corechart': 'PieChart'},
                 visualizationPkg: 'corechart',
                 visualizationCfg: {
-                    title: 'Invertido en sectores',
+                    title: "Invertido en sectores",
                     pieSliceText: 'label',
                     pieResidueSliceLabel: this.porcionOtrosText,
                     chartArea : {
@@ -270,14 +279,99 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                               tooltip:true,
                               fields: ['monto', 'numProyectos'],
                               
-                              template: new Ext.Template('Monto: {monto:number("0,000/i")} M$ en {numProyectos} iniciativas',
+                              template: new Ext.Template('{monto}: {monto:number("0.000,000/i")} M$ en {numProyectos} iniciativas',
                                       {
                                   compiled: true
                                       }) 
                           }
-                  ]                 
+                  ]             
+                            
                        
             };
+    },
+
+    _getBarChartCfg : function(formValues,small) {
+        var groupingByCombo = Ext.getCmp('agruparPorId');
+        var groupingByText = groupingByCombo.findRecord(groupingByCombo.valueField 
+            || groupingByCombo.displayField, groupingByCombo.getValue()).get(groupingByCombo.displayField);
+        return {
+            visualizationPkgs: {'corechart': 'ColumnChart'},
+            visualizationPkg: 'corechart',
+            visualizationCfg: {                    
+                vAxis: {
+                    title: this.xAxisTitle,
+                    textPosition:"in"
+                },
+                hAxis: {
+                    textStyle: {
+                        fontSize: 9
+                    },
+                    slantedTextAngle: 45
+                },
+                legend: {
+                    position: 'in'
+                },
+                chartArea :{
+                    width: small?"70%":"90%",
+                    height: small?"70%":"75%"
+                },
+                title: "Monto invertido en sector " + formValues.sector + " - " 
+                    + "Fuente: " + formValues.fuente + " - " 
+                    + "Año: " + formValues.anyo 
+                    + " - Agrupado por: " + groupingByText
+            },
+            store: this._barStore,
+            columns: [
+                     {dataIndex: 'groupBy', label:''}, 
+                     {dataIndex: 'monto', label: 'Monto'},
+                     {
+                         tooltip:true,
+                         fields: ['groupBy', 'monto', 'numProyectos'],
+                         
+                         template: new Ext.Template('{groupBy}: {monto:number("0.000,000/i")} M$ en {numProyectos} iniciativas',
+                             {
+                                compiled: true
+                             }) 
+                     }
+            ]          
+        }
+    },
+
+    _getPieChartCfg : function(formValues, small) {
+        var projectTypeCombo = Ext.getCmp('tipoProyectoId');        
+        var projectTypeText = projectTypeCombo.findRecord(projectTypeCombo.valueField || projectTypeCombo.displayField, projectTypeCombo.getValue()).get(projectTypeCombo.displayField);        
+
+        return {
+            visualizationPkgs: {'corechart': 'PieChart'},
+            visualizationPkg: 'corechart',
+            visualizationCfg: {
+                title: projectTypeText + " - Año: " + formValues.anyo + " - Invertido en sectores",
+                pieSliceText: 'label',
+                pieResidueSliceLabel: this.porcionOtrosText,
+                chartArea : {
+                    width: "90%",
+                    height: small?"70%":"90%"
+                }
+            },
+            store: this._pieStore,
+            columns: [
+                      {dataIndex: 'groupBy', label:'Sectores'}, 
+                      {dataIndex: 'monto', label: 'Monto'},
+                      {
+                          tooltip:true,
+                          fields: ['monto', 'numProyectos'],
+                          template: new Ext.Template('Monto: {monto:number("0.000,000/i")} M$ en {numProyectos} iniciativas',
+                             {
+                                compiled: true
+                          })
+                      }
+            ],
+            formatter : {
+                pattern : "{0}",
+                srcIdxs : [2],
+                outIdx : 1
+            }
+          }
     },
 
     _createSourceStore : function() {
@@ -668,35 +762,66 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             return;
         }
 
-    	var values = Ext.getCmp('inversion-form-region').getForm().getValues();
-    	var lineChart = Ext.getCmp('lineChartId');
-    	var agrupadoPorCombo = Ext.getCmp('agruparPorId');
-    	var tipoProyectoCombo = Ext.getCmp('tipoProyectoId');
-    	var agrupadoPorText = agrupadoPorCombo.findRecord(agrupadoPorCombo.valueField || agrupadoPorCombo.displayField, agrupadoPorCombo.getValue()).get(agrupadoPorCombo.displayField);
-    	var tipoProyectoText = tipoProyectoCombo.findRecord(tipoProyectoCombo.valueField || tipoProyectoCombo.displayField, tipoProyectoCombo.getValue()).get(tipoProyectoCombo.displayField);
-    	
-    	
-        var pieChart = Ext.getCmp('pieChartId');
+        // We get info from the form.
+        var formPanel =  Ext.getCmp('inversion-form-region');
+        var formValues = formPanel.getForm().getValues();
+       
+        this._barStore.reload({params: formValues});
+        this._pieStore.reload({
+            params: {
+                'tipoProyecto': formValues.tipoProyecto,
+                'anyo': formValues.anyo,
+                'agruparPor': 'sector'
+            }
+        });     
+      
+       
+        var smallChartConfig = null;
+        var bigChartConfig = null;
+        if(this._bigChart=="pie") {
+            smallChartConfig = this._getBarChartCfg(formValues,true);
+            bigChartConfig = this._getPieChartCfg(formValues,false);
+        } else {
+            bigChartConfig = this._getBarChartCfg(formValues,false);
+            smallChartConfig = this._getPieChartCfg(formValues,true);
+        }
         
-        var barChartTitle = "Monto invertido en sector " + values.sector + " - " 
-        	+ "Fuente: " + values.fuente + " - " 
-        	+ "Año: " + values.anyo 
-        	+ " - Agrupado por: " + agrupadoPorText;
-        
-        var pieChartTitle = tipoProyectoText + " - Año: " + values.anyo + " - Invertido en sectores";  
-        lineChart.visualizationCfg.title = barChartTitle;
-        pieChart.visualizationCfg.title= pieChartTitle;
+
+        // The configs are applied.
+        var smallChart = Ext.getCmp('smallChartId');
+        var bigChart = Ext.getCmp('bigChartId');
+
+        Ext.apply(smallChart, smallChartConfig);
+        Ext.apply(bigChart, bigChartConfig);
+
+        this._reInitChart(smallChart);
+        this._reInitChart(bigChart);
         
     	
-    	this._barStore.reload({params: values});
-    	this._pieStore.reload({
-    		params: {
-    			'tipoProyecto': values.tipoProyecto,
-    			'anyo': values.anyo,
-    			'agruparPor': 'sector'
-    		}
-    	});       
+    	  
     },
+
+    // Does similarly to the GVisualizationPanel, but without initializing the panel itself.
+    // This allows us to change the visualization params without problems.
+    _reInitChart : function(chart) {
+        if (typeof chart.visualizationPkg === 'object') {
+            Ext.apply(chart.visualizationPkgs, chart.visualizationPkg);            
+            for (var key in chart.visualizationPkg) {
+                chart.visualizationPkg = key;
+                break;
+            }
+        }
+        google.load(
+            chart.visualizationAPI,
+            chart.visualizationAPIVer,
+            {
+                packages: [chart.visualizationPkg],
+                callback: chart.onLoadCallback.createDelegate(chart)
+            }
+        );        
+        chart.store = Ext.StoreMgr.lookup(chart.store);
+    },
+
     georeferenceInitiatives: function() {
     	var values = Ext.getCmp('inversion-form-region').getForm().getValues();
     	var button = Ext.getCmp('iniciatiavasGeoId');
