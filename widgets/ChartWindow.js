@@ -880,7 +880,8 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     		    		var popupWindow = new Viewer.plugins.FichaInversion({
     		    			feature: feature,
     		    			location: feature,
-    		    			baseUrl: this.baseUrl
+    		    			baseUrl: this.baseUrl,
+                            anchored: false
     		    			
     		    		});
     		    		popupWindow.on('close', function(p){
