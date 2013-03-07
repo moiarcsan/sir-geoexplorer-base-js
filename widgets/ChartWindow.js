@@ -858,7 +858,8 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                     fillOpacity: 1,
                     graphicXOffset: -30/2,
                     graphicYOffset: -18/2,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    graphicZIndex:1
                 });
               var selectedStyle = new OpenLayers.Style(
                 {
@@ -871,10 +872,11 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                     fillOpacity: 1,
                     graphicXOffset: -30/2,
                     graphicYOffset: -18/2,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    graphicZIndex:1000
                 });
     		
-    		var myStyles = new OpenLayers.StyleMap({default: defaultStyle, selected: selectedStyle});
+    		var myStyles = new OpenLayers.StyleMap({"default": defaultStyle, "select": selectedStyle});
     		
     		
     		var utm19Projection = new OpenLayers.Projection("EPSG:32719");
