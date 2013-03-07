@@ -134,7 +134,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     _onResize : function() {
         if(!this.hidden) {
             this.doLayout();
-            this._doChartsCreation();
+            this._doChartsCreation(false);
         }
     },
     _onShow: function () {
@@ -239,7 +239,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             this._bigChart="pie"
         }
 
-        this._doChartsCreation();
+        this._doChartsCreation(false);
     },
 
     _createBigChart : function() {
@@ -691,7 +691,9 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                 buttons: [{
                     scope: this,
                     text: this.graphicButtonText,
-                    handler: this._doChartsCreation
+                    handler: function(){
+                        this._doChartsCreation(true);
+                    }
                     
                 }]
             };
@@ -756,7 +758,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
 
     },
 
-    _doChartsCreation: function() {
+    _doChartsCreation: function(needsReload) {
         if(!this.rendered) {
             // We cant do this yet (the method was called in a resize before things were initialized)
             return;
@@ -766,16 +768,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
         var formPanel =  Ext.getCmp('inversion-form-region');
         var formValues = formPanel.getForm().getValues();
        
-        this._barStore.reload({params: formValues});
-        this._pieStore.reload({
-            params: {
-                'tipoProyecto': formValues.tipoProyecto,
-                'anyo': formValues.anyo,
-                'agruparPor': 'sector'
-            }
-        });     
-      
-       
+
         var smallChartConfig = null;
         var bigChartConfig = null;
         if(this._bigChart=="pie") {
@@ -791,14 +784,32 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
         var smallChart = Ext.getCmp('smallChartId');
         var bigChart = Ext.getCmp('bigChartId');
 
+
         Ext.apply(smallChart, smallChartConfig);
         Ext.apply(bigChart, bigChartConfig);
 
-        this._reInitChart(smallChart);
-        this._reInitChart(bigChart);
+        var self=this;   
+
+
+        if(needsReload){
+            this._barStore.reload({params: formValues});
+                
+
+            self._pieStore.reload({
+                params: {
+                    'tipoProyecto': formValues.tipoProyecto,
+                    'anyo': formValues.anyo,
+                    'agruparPor': 'sector'
+                }});
+            
+            
+        } else {
+            this._reInitChart(smallChart);                                
+            this._reInitChart(bigChart);
+        }
+         
         
-    	
-    	  
+        
     },
 
     // Does similarly to the GVisualizationPanel, but without initializing the panel itself.
@@ -820,6 +831,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
             }
         );        
         chart.store = Ext.StoreMgr.lookup(chart.store);
+         chart.store.addListener('datachanged', chart.datachanged, chart);
     },
 
     georeferenceInitiatives: function() {
