@@ -29,9 +29,10 @@
 Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
 
     /** i18n **/
-    titleText: 'Canales Temáticos',
+    titleText: 'Thematic Channels',
     loadText: 'Load',
     closeText: 'Close',
+    folderWindowTitleText: 'Folders',
 
     showLayers: false,
     restBaseUrl: "rest",
@@ -47,7 +48,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
     constructor: function (config) {
 
         Viewer.dialog.ChannelTools.superclass.constructor.call(this, Ext.apply({
-            title: config.showLayers ? 'Carpetas' : this.titleText,
+            title: config.showLayers ? this.folderWindowTitleText : this.titleText,
             width: 500,
             height: 400,
             layout: 'fit',
@@ -128,7 +129,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
                 // nothing to do
             }
         }
-        this.addedLayers = new Array();
+        this.addedLayers = [];
     },
 
     onLoadButtonClicked: function() {
