@@ -223,7 +223,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                          tooltip:true,
                          fields: ['groupBy', 'monto', 'numProyectos'],
                          
-                         template: new Ext.Template('{groupBy}: {monto:number("0.000/i")} M$ en {numProyectos} iniciativas',
+                         template: new Ext.Template('{groupBy}: {monto:number("0.000/i")} CL$ en {numProyectos} iniciativas',
                              {
                                 compiled: true
                              }) 
@@ -279,7 +279,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                               tooltip:true,
                               fields: ['monto', 'numProyectos'],
                               
-                              template: new Ext.Template('{monto}: {monto:number("0.000,000/i")} M$ en {numProyectos} iniciativas',
+                              template: new Ext.Template('{monto}: {monto:number("0.000.000/i")} CL$ en {numProyectos} iniciativas',
                                       {
                                   compiled: true
                                       }) 
@@ -328,7 +328,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                          tooltip:true,
                          fields: ['groupBy', 'monto', 'numProyectos'],
                          
-                         template: new Ext.Template('{groupBy}: {monto:number("0.000,000/i")} M$ en {numProyectos} iniciativas',
+                         template: new Ext.Template('{groupBy}: {monto:number("0.000.000/i")} CL$ en {numProyectos} iniciativas',
                              {
                                 compiled: true
                              }) 
@@ -360,7 +360,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                       {
                           tooltip:true,
                           fields: ['monto', 'numProyectos'],
-                          template: new Ext.Template('Monto: {monto:number("0.000,000/i")} M$ en {numProyectos} iniciativas',
+                          template: new Ext.Template('Monto: {monto:number("0.000.000/i")} CL$ en {numProyectos} iniciativas',
                              {
                                 compiled: true
                           })
@@ -860,8 +860,21 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
                     graphicYOffset: -18/2,
                     cursor: 'pointer'
                 });
+              var selectedStyle = new OpenLayers.Style(
+                {
+                    externalGraphic: baseUrl +'/img/marker-red.png',
+                    fill: false, 
+                    stroke: false, 
+                    pointRadius: 0,
+                    graphicWidth: 18 , 
+                    graphicHeight: 30,
+                    fillOpacity: 1,
+                    graphicXOffset: -30/2,
+                    graphicYOffset: -18/2,
+                    cursor: 'pointer'
+                });
     		
-    		var myStyles = new OpenLayers.StyleMap(defaultStyle);
+    		var myStyles = new OpenLayers.StyleMap({default: defaultStyle, selected: selectedStyle});
     		
     		
     		var utm19Projection = new OpenLayers.Projection("EPSG:32719");
@@ -881,7 +894,7 @@ Viewer.dialog.ChartWindow = Ext.extend(Ext.Window, {
     		    			feature: feature,
     		    			location: feature,
     		    			baseUrl: this.baseUrl,
-                            anchored: false
+                            anchored:false
     		    			
     		    		});
     		    		popupWindow.on('close', function(p){
