@@ -185,7 +185,7 @@ Viewer.PointSymbolizerMod = Ext.extend(gxp.PointSymbolizer, {
                     "fileselected": function(cmp, value) {
                         // remove the path from the filename - avoids C:/fakepath etc.
                         //console.log(value);
-                        cmp.setValue(value.split(/[/\\]/).pop());
+                        //cmp.setValue(value.split(/[/\\]/).pop());
                         this.uploadIconFile();
                     }, 
                     scope: this
