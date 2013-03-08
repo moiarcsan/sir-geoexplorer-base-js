@@ -7,52 +7,70 @@
  */
 
 /** 
- * @include widgets/FillSymbolizer.js
- * @include widgets/StrokeSymbolizer.js
+ * @requires widgets/PointSymbolizer.js
  */
-
+ 
 /** api: (define)
- *  module = gxp
- *  class = PointSymbolizer
+ *  module = Viewer
+ *  class = PointSymbolizerMod
  *  base_link = `Ext.Panel <http://extjs.com/deploy/dev/docs/?class=Ext.Panel>`_
  */
 Ext.namespace("Viewer");
 
 /** api: constructor
- *  .. class:: PointSymbolizer(config)
+ *  .. class:: PointSymbolizerMod(config)
  *   
  *      Form for configuring a point symbolizer.
  */
 Viewer.PointSymbolizerMod = Ext.extend(gxp.PointSymbolizer, {
+
+    /** api: config[symbolizer]
+     *  ``Object``
+     *  A symbolizer object that will be used to fill in form values.
+     *  This object will be modified when values change.  Clone first if
+     *  you do not want your symbolizer modified.
+     */
+    symbolizer: null,
+    
+    /** i18n */
+    uploadFileEmptyText: 'Select a file...',
+    uploadFileLabel: 'File',
+    waitMsgText: 'Please wait...',
     
     /** api: config[validFileExtensions]
      *  ``Array``
      *  List of valid file extensions.  These will be used in validating the 
      *  file input value.  Default is ``[".png,.jpeg,.jpg"]``.
      */
-    validFileExtensions: [".png,.jpeg,.jpg"],
-
-    uploadFileEmptyText: 'Select a file...',
-    uploadFileLabel: 'File',
+    validFileExtensions: [".png", ".jpeg", ".jpg"],
     
-    /** private: method[fileNameValidator]
-     *  :arg name: ``String`` The chosen filename.
-     *  :returns: ``Boolean | String``  True if valid, message otherwise.
+    /** api: config[url]
+     *  ``String``
+     *  URL for upload temp file to persistencegeo.
      */
-    fileNameValidator: function(name) {
-        var valid = false;
-        var ext, len = name.length;
-        for (var i=0, ii=this.validFileExtensions.length; i<ii; ++i) {
-            ext = this.validFileExtensions[i];
-            if (name.slice(-ext.length).toLowerCase() === ext) {
-                valid = true;
-                break;
-            }
-        }
-        return valid || this.invalidFileExtensionText + '<br/>' + this.validFileExtensions.join(", ");
+     url: "persistenceGeo/uploadResource",
+
+    
+    /** api: config[loadFileUrl]
+     *  ``String``
+     *  URL for load temp file to persistencegeo.
+     */
+    loadFileUrl: 'persistenceGeo/getResource/{0}',
+
+    /** api: method[getLoadFileUrl]
+     *  ``String``
+     *  Return URL for load a temp file to persistencegeo.
+     */
+    getLoadFileUrl: function(idFile){
+        return this.defaultRestUrl + '/' + String.format(this.loadFileUrl, idFile);
     },
 
+
+    defaultRestUrl: null,
+
     initComponent: function() {
+
+        this.target = Ext.getCmp('styler_component') ? Ext.getCmp('styler_component').target : null;
         
         if(!this.symbolizer) {
             this.symbolizer = {};
@@ -77,47 +95,29 @@ Viewer.PointSymbolizerMod = Ext.extend(gxp.PointSymbolizer, {
             collapsed: this.external,
             layout: "form",
             items: [{
-            //     xtype: "gxp_fillsymbolizer",
-            //     symbolizer: this.symbolizer,
-            //     labelWidth: this.labelWidth,
-            //     labelAlign: this.labelAlign,
-            //     colorManager: this.colorManager,
-            //     listeners: {
-            //         change: function(symbolizer) {
-            //             this.fireEvent("change", this.symbolizer);
-            //         },
-            //         scope: this
-            //     }
-            // }, {
-                xtype: "fileuploadfield",
-                id: "file",
-                anchor: "90%",
-                emptyText: this.uploadFileEmptyText,
-                fieldLabel: this.uploadFileLabel,
-                name: "uploadfile",
-                buttonText: "",
-                buttonCfg: {
-                    iconCls: "gxp-icon-filebrowse"
-                },
+                xtype: "gxp_fillsymbolizer",
+                symbolizer: this.symbolizer,
+                labelWidth: this.labelWidth,
+                labelAlign: this.labelAlign,
+                colorManager: this.colorManager,
                 listeners: {
-                    "fileselected": function(cmp, value) {
-                        // remove the path from the filename - avoids C:/fakepath etc.
-                        cmp.setValue(value.split(/[/\\]/).pop());
-                    }
-                },
-                validator: this.fileNameValidator.createDelegate(this)
-            // }, {
-            //     xtype: "gxp_strokesymbolizer",
-            //     symbolizer: this.symbolizer,
-            //     labelWidth: this.labelWidth,
-            //     labelAlign: this.labelAlign,
-            //     colorManager: this.colorManager,
-            //     listeners: {
-            //         change: function(symbolizer) {
-            //             this.fireEvent("change", this.symbolizer);
-            //         },
-            //         scope: this
-            //     }
+                    change: function(symbolizer) {
+                        this.fireEvent("change", this.symbolizer);
+                    },
+                    scope: this
+                }
+            }, {
+                xtype: "gxp_strokesymbolizer",
+                symbolizer: this.symbolizer,
+                labelWidth: this.labelWidth,
+                labelAlign: this.labelAlign,
+                colorManager: this.colorManager,
+                listeners: {
+                    change: function(symbolizer) {
+                        this.fireEvent("change", this.symbolizer);
+                    },
+                    scope: this
+                }
             }]
         });
         
@@ -164,9 +164,40 @@ Viewer.PointSymbolizerMod = Ext.extend(gxp.PointSymbolizer, {
             }]
         });
 
+        this.filePanel = new Ext.FormPanel({
+            border: false,
+            collapsed: false,
+            //collapsed: !this.external,
+            layout: "form",
+            fileUpload: true,
+            items: [{
+                xtype: "fileuploadfield",
+                id: "file",
+                anchor: "90%",
+                emptyText: this.uploadFileEmptyText,
+                fieldLabel: this.uploadFileLabel,
+                name: "uploadfile",
+                buttonText: "",
+                buttonCfg: {
+                    iconCls: "gxp-icon-filebrowse"
+                },
+                listeners: {
+                    "fileselected": function(cmp, value) {
+                        // remove the path from the filename - avoids C:/fakepath etc.
+                        //console.log(value);
+                        cmp.setValue(value.split(/[/\\]/).pop());
+                        this.uploadIconFile();
+                    }, 
+                    scope: this
+                },
+                validator: this.fileNameValidator.createDelegate(this)
+            }]
+        });
+
         this.items = [{
             xtype: "combo",
             name: "mark",
+            id: 'typeSymbol',
             fieldLabel: this.symbolText,
             store: new Ext.data.JsonStore({
                 data: {root: this.pointGraphics},
@@ -191,38 +222,13 @@ Viewer.PointSymbolizerMod = Ext.extend(gxp.PointSymbolizer, {
             editable: false,
             listeners: {
                 select: function(combo, record) {
-                    var mark = record.get("mark");
-                    var value = record.get("value");
-                    if(!mark) {
-                        if(value) {
-                            this.urlField.hide();
-                            this.symbolizer["externalGraphic"] = value;
-                        } else {
-                            this.urlField.show();
-                        }
-                        if(!this.external) {
-                            this.external = true;
-                            var urlValue = this.urlField.getValue();
-                            if (!Ext.isEmpty(urlValue)) {
-                                this.symbolizer["externalGraphic"] = urlValue;
-                            }
-                            delete this.symbolizer["graphicName"];
-                            this.updateGraphicDisplay();
-                        }
-                    } else {
-                        if(this.external) {
-                            this.external = false;
-                            delete this.symbolizer["externalGraphic"];
-                            this.updateGraphicDisplay();
-                        }
-                        this.symbolizer["graphicName"] = value;
-                    }
-                    this.fireEvent("change", this.symbolizer);
+                    this.selectSymbol(combo, record);
                 },
                 scope: this
             },
             width: 100 // TODO: push this to css
-        }, {
+        }, 
+        this.filePanel, {
             xtype: "textfield",
             name: "size",
             fieldLabel: this.sizeText,
@@ -266,6 +272,41 @@ Viewer.PointSymbolizerMod = Ext.extend(gxp.PointSymbolizer, {
         gxp.PointSymbolizer.superclass.initComponent.call(this);
 
     },
+
+    selectSymbol: function (combo, record){
+        var mark = record.get("mark");
+        var value = record.get("value");
+        if(!mark) {
+            if(value) {
+                this.urlField.hide();
+                this.symbolizer["externalGraphic"] = value;
+            } else {
+                this.urlField.show();
+            }
+
+            if(!this.external) {
+                this.external = true;
+                var urlValue = this.urlField.getValue();
+                if (!Ext.isEmpty(urlValue)) {
+                    this.symbolizer["externalGraphic"] = urlValue;
+                }
+                delete this.symbolizer["graphicName"];
+                this.updateGraphicDisplay();
+            }
+        } else {
+            if(this.external) {
+                this.external = false;
+                delete this.symbolizer["externalGraphic"];
+                this.updateGraphicDisplay();
+            }
+            this.symbolizer["graphicName"] = value;
+        }
+        try{
+        this.fireEvent("change", this.symbolizer);
+        }catch(e){
+            // TODO: Handle this: The wms style mustn't be updated
+        }
+    },
     
     updateGraphicDisplay: function() {
         if(this.external) {
@@ -276,9 +317,69 @@ Viewer.PointSymbolizerMod = Ext.extend(gxp.PointSymbolizer, {
             this.markPanel.expand();
         }
         // TODO: window shadow fails to sync
+    },
+
+    uploadIconFile: function (){
+        var this_ = this;
+        var form = this.filePanel.getForm();
+        if (form.isValid()) {
+            form.submit({
+                url: this.getUploadUrl(),
+                waitMsg: this.waitMsgText,
+                waitMsgTarget: true,
+                reset: true,
+                success : function(form, action) {
+                    try{
+                        var json = Ext.decode(action.response.responseText);
+                        var idFile = json.data;
+                        if(!!json && !!json.data){
+                            this_.idFile = json.data;
+                            var typeSymbol = Ext.getCmp('typeSymbol');
+                            typeSymbol.setValue(this_.graphicExternalText);
+                            this_.selectSymbol(typeSymbol, typeSymbol.store.getAt(6));
+                            var urlValue = this_.getLoadFileUrl(this_.idFile);
+                            this_.urlField.setValue(urlValue);
+                            typeSymbol.fireEvent('change', this_.urlField, urlValue);
+                        }else{
+                            //TODO: Show error
+                            console.log('error uploading');
+                        }
+                    }catch(e){
+                        //TODO: Show error
+                        console.log('error uploading');
+                    }
+                },
+                failure : function(form, action) {
+                    //TODO: Show error
+                    console.log('error uploading');
+                }
+            });
+        }
+    },
+    
+    /** private: method[fileNameValidator]
+     *  :arg name: ``String`` The chosen filename.
+     *  :returns: ``Boolean | String``  True if valid, message otherwise.
+     */
+    fileNameValidator: function(name) {
+        var valid = false;
+        var ext, len = name.length;
+        for (var i=0, ii=this.validFileExtensions.length; i<ii; ++i) {
+            ext = this.validFileExtensions[i];
+            if (name.slice(-ext.length).toLowerCase() === ext) {
+                valid = true;
+                break;
+            }
+        }
+        return valid || this.invalidFileExtensionText + '<br/>' + this.validFileExtensions.join(", ");
+    },
+
+    /** private: method[getUploadUrl]
+     */
+    getUploadUrl: function() {
+        return OpenLayers.ProxyHost + this.defaultRestUrl + '/'  + this.url;
     }
-    
-    
+        
 });
 
 /** api: xtype = gxp_pointsymbolizer */

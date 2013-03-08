@@ -80,6 +80,7 @@ Viewer.widgets.WMSLayerPanelMod = Ext.extend(gxp.WMSLayerPanel, {
         var config = gxp.WMSStylesDialog.createGeoServerStylerConfig(
             this.layerRecord, url
         );
+        
         if (this.rasterStyling === true) {
             config.plugins.push({
                 ptype: "gxp_wmsrasterstylesdialog"

@@ -10,6 +10,7 @@
  * @requires plugins/Tool.js
  * @requires widgets/WMSStylesDialog.js
  * @requires plugins/GeoServerStyleWriter.js
+ * @requires widgets/PointSymbolizerMod.js
  */
 
 /** api: (define)
@@ -31,6 +32,8 @@ Viewer.plugins.Styler = Ext.extend(gxp.plugins.Styler, {
     
     /** api: ptype = vw_styler */
     ptype: "vw_styler",
+
+    id: 'styler_component',
 
     /** private: method[checkIfStyleable]
      *  :arg layerRec: ``GeoExt.data.LayerRecord``
@@ -114,7 +117,10 @@ Viewer.plugins.Styler = Ext.extend(gxp.plugins.Styler, {
 
         record = this.repairRecord(record);
 
-        Ext.apply(config, Viewer.WMSStylesDialogMod.createGeoServerStylerConfig(record));
+        // TODO: Inheritance of target between WMSStyleDialog, RulePanel... PointSymbolizerMod
+        Viewer.PointSymbolizerMod.prototype.defaultRestUrl = this.target.defaultRestUrl;
+
+        Ext.apply(config, gxp.WMSStylesDialog.createGeoServerStylerConfig(record));
         if (this.rasterStyling === true) {
             config.plugins.push({
                 ptype: "gxp_wmsrasterstylesdialog"
