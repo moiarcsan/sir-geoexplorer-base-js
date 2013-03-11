@@ -98,6 +98,7 @@ OpenLayers.Control.CustomMousePosition = OpenLayers.Class(OpenLayers.Control, {
         "20": new OpenLayers.Projection("EPSG:32720")},
     utmProjectionPrefix: "EPSG:327",
     wgs84LatLonProjection: new OpenLayers.Projection("EPSG:4326"),
+    dmsCoordinatesFormat: true,
 
    
     /**
@@ -158,8 +159,8 @@ OpenLayers.Control.CustomMousePosition = OpenLayers.Class(OpenLayers.Control, {
                     null, null, 'relative');
             var lonDiv = OpenLayers.Util.createDiv(this.id + "LongDiv", null,
                     null, null, 'relative');
-            var changeDisplayDiv = OpenLayers.Util.createDiv(this.id
-                    + "changeDisplayDiv", null, null, null, 'relative');
+            var changeDisplayDiv = OpenLayers.Util.createDiv(this.id + 
+                    "changeDisplayDiv", null, null, null, 'relative');
             var utmZoneDiv = OpenLayers.Util.createDiv(this.id + "utmZoneDiv",
                     null, null, null, 'relative');
             var xDiv = OpenLayers.Util.createDiv(this.id + "XDiv", null, null,
@@ -171,7 +172,7 @@ OpenLayers.Control.CustomMousePosition = OpenLayers.Class(OpenLayers.Control, {
             coordinatesDiv.className = "coordinatesDiv";
             OpenLayers.Element.addClass(latDiv, 'lonlatDiv');
             OpenLayers.Element.addClass(lonDiv, 'lonlatDiv');
-            OpenLayers.Element.addClass(changeDisplayDiv, 'lonlatDiv');
+            OpenLayers.Element.addClass(changeDisplayDiv, 'changeDisplayDiv');
             OpenLayers.Element.addClass(utmZoneDiv, 'lonlatDiv');
             OpenLayers.Element.addClass(xDiv, 'lonlatDiv');
             OpenLayers.Element.addClass(yDiv, 'lonlatDiv');
@@ -195,6 +196,21 @@ OpenLayers.Control.CustomMousePosition = OpenLayers.Class(OpenLayers.Control, {
             latValue = OpenLayers.Element.addClass(latValue, 'lonlatValue');
             latDiv.appendChild(latLabel);
             latDiv.appendChild(latValue);
+            
+            // DMS/Decimal button
+            var button = new Ext.Button({
+                cls: 'changeDisplayButton',
+                text: "Mostrar en Decimal",
+                renderTo: changeDisplayDiv,
+                listeners: {
+                   "click": {
+                       fn: this.toggleCoordinatesFormat, 
+                       scope: this
+                   }
+                }
+            });
+            this.button = button;
+          
 
             // UTM zone
             var utmZoneLabel = document.createElement('span');
@@ -231,6 +247,7 @@ OpenLayers.Control.CustomMousePosition = OpenLayers.Class(OpenLayers.Control, {
             // Add to coordinatesDiv
             coordinatesDiv.appendChild(lonDiv);
             coordinatesDiv.appendChild(latDiv);
+            coordinatesDiv.appendChild(changeDisplayDiv);
             coordinatesDiv.appendChild(utmZoneDiv);
             coordinatesDiv.appendChild(xDiv);
             coordinatesDiv.appendChild(yDiv);
@@ -327,10 +344,21 @@ OpenLayers.Control.CustomMousePosition = OpenLayers.Class(OpenLayers.Control, {
      */
     formatOutput : function (lonLat) {
         var digits = parseInt(this.numDigits, 10);
-        var result = {
-            lon : lonLat.lon.toFixed(digits) + "º",
-            lat : lonLat.lat.toFixed(digits) + "º"
-        };
+        var result = null;
+        if (this.dmsCoordinatesFormat) {
+            var longitude = this.lonLatToDMS(lonLat.lon);
+            var latitude = this.lonLatToDMS(lonLat.lat);
+           result = {
+              lon: longitude[0] + "\u00B0 " + longitude[1] + "' " + longitude[2] + "\"",
+              lat: latitude[0] + "\u00B0 " + latitude[1] + "' " + latitude[2] + "\"" 
+            };            
+        } else {
+            result = {
+              lon : lonLat.lon.toFixed(digits) + "\u00B0",
+              lat : lonLat.lat.toFixed(digits) + "\u00B0"
+            };
+            
+        }
 
         return result;
     },
@@ -377,6 +405,30 @@ OpenLayers.Control.CustomMousePosition = OpenLayers.Class(OpenLayers.Control, {
         for (var i = 0; i < padding; i++) { zeroes += "0"; }
 
         return (zeroes + value).slice(padding * -1);
+    },
+    
+    toggleCoordinatesFormat: function() {
+        this.dmsCoordinatesFormat = !this.dmsCoordinatesFormat;
+        var evt = {
+                xy: {
+                    x: this.lastXy.x,
+                    y: this.lastXy.y
+                }
+        };
+        if (this.dmsCoordinatesFormat) {
+            this.button.setText("Mostrar en Decimal");
+        } else {
+            this.button.setText("Mostrar en GG\u00B0 MM' SS\"");
+        }
+        this.redraw(evt);
+    },
+    
+    lonLatToDMS: function(coord){
+        var d = parseInt(coord, 10);
+        var md = Math.abs(coord - d) * 60;
+        var m = parseInt(md, 10);
+        var sd = (md-m) * 60;
+        return [d, m, sd.toFixed(3)];
     },
     
     
