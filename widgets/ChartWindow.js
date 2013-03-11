@@ -88,8 +88,7 @@ Viewer.dialog.ChartWindow = Ext
 
                         var context = this;
                         this._barStore = new Ext.data.JsonStore({
-                            url : context.baseUrl
-                                    + '/inversion/getMontosGroupBy',
+                            url : context.baseUrl + '/inversion/getMontosGroupBy',
                             storeId : 'barStoreId',
                             root : 'data',
                             idProperty : 'groupBy',
@@ -106,8 +105,7 @@ Viewer.dialog.ChartWindow = Ext
                             autoload : false
                         });
                         this._pieStore = new Ext.data.JsonStore({
-                            url : context.baseUrl
-                                    + '/inversion/getMontosGroupBy',
+                            url : context.baseUrl + '/inversion/getMontosGroupBy',
                             storeId : 'pieStoreId',
                             root : 'data',
                             idProperty : 'groupBy',
@@ -180,6 +178,8 @@ Viewer.dialog.ChartWindow = Ext
                     },
 
                     onBeforeRender : function () {
+                        
+                        
                         var c = [
                                 {
                                     xtype : "panel",
@@ -229,7 +229,7 @@ Viewer.dialog.ChartWindow = Ext
                                 legend : {
                                     position : 'in'
                                 },
-                                title : "Monto invertido en sector"
+                                title : "Monto Solicitado en sector"
                             },
                             store : this._barStore,
                             columns : [
@@ -262,7 +262,7 @@ Viewer.dialog.ChartWindow = Ext
                             this._bigChart = "pie";
                         }
 
-                        this._doChartsCreation(false);
+                        this._doChartsCreation(true);
                     },
 
                     _createBigChart : function () {
@@ -321,8 +321,7 @@ Viewer.dialog.ChartWindow = Ext
                     _getBarChartCfg : function (formValues, small) {
                         var groupingByCombo = Ext.getCmp('agruparPorId');
                         var groupingByText = groupingByCombo.findRecord(
-                                groupingByCombo.valueField
-                                        || groupingByCombo.displayField,
+                                groupingByCombo.valueField || groupingByCombo.displayField,
                                 groupingByCombo.getValue()).get(
                                 groupingByCombo.displayField);
                         return {
@@ -348,11 +347,11 @@ Viewer.dialog.ChartWindow = Ext
                                     width : small ? "70%" : "90%",
                                     height : small ? "70%" : "75%"
                                 },
-                                title : "Monto invertido en sector "
-                                        + formValues.sector + " - "
-                                        + "Fuente: " + formValues.fuente
-                                        + " - " + "Año: " + formValues.anyo
-                                        + " - Agrupado por: " + groupingByText
+                                title : "Monto Solicitado en sector: " +
+                                        formValues.sector + " - " +
+                                        "Fuente: " + formValues.fuente +
+                                        " - " + "Año: " + formValues.anyo +
+                                        " - Agrupado por: " + groupingByText
                             },
                             store : this._barStore,
                             columns : [
@@ -381,8 +380,7 @@ Viewer.dialog.ChartWindow = Ext
                     _getPieChartCfg : function (formValues, small) {
                         var projectTypeCombo = Ext.getCmp('tipoProyectoId');
                         var projectTypeText = projectTypeCombo.findRecord(
-                                projectTypeCombo.valueField
-                                        || projectTypeCombo.displayField,
+                                projectTypeCombo.valueField || projectTypeCombo.displayField,
                                 projectTypeCombo.getValue()).get(
                                 projectTypeCombo.displayField);
 
@@ -392,9 +390,9 @@ Viewer.dialog.ChartWindow = Ext
                             },
                             visualizationPkg : 'corechart',
                             visualizationCfg : {
-                                title : projectTypeText + " - Año: "
-                                        + formValues.anyo
-                                        + " - Invertido en sectores",
+                                title : projectTypeText + " - Año: " +
+                                        formValues.anyo +
+                                        " - Invertido en sectores",
                                 pieSliceText : 'label',
                                 pieResidueSliceLabel : this.porcionOtrosText,
                                 chartArea : {
@@ -805,7 +803,7 @@ Viewer.dialog.ChartWindow = Ext
                                 scope : this,
                                 text : this.graphicButtonText,
                                 handler : function () {
-                                    this._doChartsCreation(true);
+                                    this._doChartsCreation(false);
                                 }
 
                             } ]
@@ -819,8 +817,7 @@ Viewer.dialog.ChartWindow = Ext
                                 root : 'data'
                             }),
                             proxy : new Ext.data.HttpProxy({
-                                url : this.baseUrl
-                                        + '/inversion/getNivelesTerritoriales'
+                                url : this.baseUrl + '/inversion/getNivelesTerritoriales'
                             }),
                             remoteSort : true
 
@@ -855,8 +852,7 @@ Viewer.dialog.ChartWindow = Ext
                                 root : 'data'
                             }),
                             proxy : new Ext.data.HttpProxy({
-                                url : this.baseUrl
-                                        + '/inversion/getLineasFinancieras'
+                                url : this.baseUrl + '/inversion/getLineasFinancieras'
                             }),
                             remotSort : true,
                             autoLoad : false,
@@ -877,7 +873,7 @@ Viewer.dialog.ChartWindow = Ext
 
                     },
 
-                    _doChartsCreation : function (needsReload) {
+                    _doChartsCreation : function (exchange) {
                         if (!this.rendered) {
                             // We cant do this yet (the method was called in a
                             // resize before things were initialized)
@@ -909,21 +905,21 @@ Viewer.dialog.ChartWindow = Ext
                         Ext.apply(smallChart, smallChartConfig);
                         Ext.apply(bigChart, bigChartConfig);
 
+                        
 
-                        if (needsReload) {
-                            this._barStore.reload({
-                                params : formValues
-                            });
+                        this._barStore.reload({
+                            params : formValues
+                        });
 
-                            this._pieStore.reload({
-                                params : {
-                                    'tipoProyecto' : formValues.tipoProyecto,
-                                    'anyo' : formValues.anyo,
-                                    'agruparPor' : 'sector'
-                                }
-                            });
+                        this._pieStore.reload({
+                            params : {
+                                'tipoProyecto' : formValues.tipoProyecto,
+                                'anyo' : formValues.anyo,
+                                'agruparPor' : 'sector'
+                            }
+                        });
 
-                        } else {
+                        if (exchange) {
                             this._reInitChart(smallChart);
                             this._reInitChart(bigChart);
                         }
@@ -982,8 +978,7 @@ Viewer.dialog.ChartWindow = Ext
                         var baseUrl = this.baseUrl;
                         if (investmentLayers.length === 0) {
                             var defaultStyle = new OpenLayers.Style({
-                                externalGraphic : baseUrl
-                                        + '/img/marker-blue.png',
+                                externalGraphic : baseUrl + '/img/marker-blue.png',
                                 fill : false,
                                 stroke : false,
                                 pointRadius : 0,
@@ -996,8 +991,7 @@ Viewer.dialog.ChartWindow = Ext
                                 graphicZIndex : 1
                             });
                             var selectedStyle = new OpenLayers.Style({
-                                externalGraphic : baseUrl
-                                        + '/img/marker-red.png',
+                                externalGraphic : baseUrl + '/img/marker-red.png',
                                 fill : false,
                                 stroke : false,
                                 pointRadius : 0,
@@ -1093,8 +1087,8 @@ Viewer.dialog.ChartWindow = Ext
                         var features = geojsonFormat.read(featureCollection);
                         investmentLayer.addFeatures(features);
                         Ext.MessageBox.alert("Resultado de la búsqueda",
-                                "Se han encontrado " + responseJson.results
-                                        + " proyectos georreferenciados");
+                                "Se han encontrado " + responseJson.results +
+                                        " proyectos georreferenciados");
                         if (responseJson.results > 0) {
                             var extent = investmentLayer.getDataExtent();
                             this.map.zoomToExtent(extent);
