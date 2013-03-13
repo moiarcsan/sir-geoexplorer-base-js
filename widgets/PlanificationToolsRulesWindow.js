@@ -64,8 +64,6 @@ Viewer.dialog.PlanificationToolsRulesWindow = Ext.extend(Ext.Window, {
 
     onBeforeRender: function() {
 
-        var padding = 'padding: 10px 16px;';
-        var border = 'border: 0px solid transparent;'
 
         this.rulesTabs = new Viewer.widgets.PlanificationToolsLayerRules();
         
@@ -114,17 +112,21 @@ Viewer.widgets.PlanificationToolsLayerRules = Ext.extend(Ext.Panel, {
         callback = typeof(callback) == 'function' ? callback : function() {};
 
         var url = layer.url || window.app.sources.local.url;
+        if (!url[url.length-1] === "?") {
+            url += "?";
+        }
 
-        url += '?' + [
+        url += [
             'TRANSPARENT=TRUE',
             'SERVICE=WMS',
             'VERSION=' + window.app.sources.local.baseParams.VERSION,
             'REQUEST=GetLegendGraphic',
             'EXCEPTIONS=application/vnd.ogc.se_xml',
-            'LAYER=' + layer.name || layer.title,
+            'LAYER=' + layer.params.LAYERS || layer.name,
             'format=image/png',
             'legend_options=fontAntiAliasing:true;fontSize:11;fontName:Arial',
-            'SCALE=1091958.1364361627'
+            'SCALE=1091958.1364361627',
+            'OPACITY=0'
         ].join('&');
 
         var newTab = {
@@ -262,7 +264,7 @@ Viewer.widgets.PlanificationToolsLayerRules = Ext.extend(Ext.Panel, {
             symbolizers: []
         };
 
-        for (s in rule.symbolizer) {
+        for (var s in rule.symbolizer) {
             try {
                 var Constructor = OpenLayers.Symbolizer[s];
                 var symbolizer = new Constructor(rule.symbolizer[s]);
