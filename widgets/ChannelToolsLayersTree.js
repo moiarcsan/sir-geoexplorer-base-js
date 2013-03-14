@@ -115,7 +115,7 @@
                             var i = 0;
                             for (i = 0; i < json.results; i++) {
                                 //console.log(json[i]);
-                                node.appendChild(new Ext.tree.TreeNode({
+                                node.appendChild(new Ext.tree.AsyncTreeNode({
                                     id: json.data[i].id,
                                     text: this.parseNodeTitle(json.data[i].text),
                                     leaf: json.data[i].leaf || !this.showLayers,
@@ -156,15 +156,13 @@
         },
 
         reload: function () {
+            this.loader.load(this.channelsNode, function () {}, this);    
             this.loader.load(this.zonesNode, function () {}, this);
-            this.loader.load(this.channelsNode, function () {}, this);
+            
         },
 
         onBeforeAppend: function (tree, parent, node) {
-
-            if (!node.isLeaf() && this.showLayers) {
-                this.loader.load(node, function () {}, this);
-            }
+           
             if (node.attributes.type === NODE_TYPES.LAYER) {
                 node.attributes.checked = false;
             }
