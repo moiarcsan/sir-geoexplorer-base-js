@@ -114,11 +114,20 @@
                             var json = Ext.util.JSON.decode(action.responseText);
                             var i = 0;
                             for (i = 0; i < json.results; i++) {
-                                //console.log(json[i]);
-                                node.appendChild(new Ext.tree.AsyncTreeNode({
-                                    id: json.data[i].id,
+                                // We need to modify ids because layers and folders might
+                                // share id, as they are different entities, and that
+                                // creates problems with the selection model of the tree,
+                                // that assume just one type of data (nodes) with mutually
+                                // exclusive identifiers.
+                                var nodeIsLeaf = json.data[i].leaf;
+                                var id= json.data[i].id;
+                                if(nodeIsLeaf) {
+                                    id+=10000000;
+                                }
+                                node.appendChild(new Ext.tree.AsyncTreeNode({                                    
+                                    id: id,
                                     text: this.parseNodeTitle(json.data[i].text),
-                                    leaf: json.data[i].leaf || !this.showLayers,
+                                    leaf: nodeIsLeaf || !this.showLayers,
                                     type: json.data[i].type,
                                     data: json.data[i].data
                                 }));
@@ -156,6 +165,7 @@
         },
 
         reload: function () {
+            this._lastIdNode = 0;
             this.loader.load(this.channelsNode, function () {}, this);    
             this.loader.load(this.zonesNode, function () {}, this);
             
@@ -169,8 +179,9 @@
         },
 
         onNodeLoaded: function (treeLoader, node, response) {
-            this.fireEvent('nodeLoaded', treeLoader, node);
+            this.fireEvent('nodeLoaded', treeLoader, node);            
         }
+
 
     });
 
