@@ -107,7 +107,6 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
     },
 
     onTreeNodeClick: function (node, checked) {
-
         if (!this.showLayers) {
             if (node.isLeaf()) {
                 this.selectedChannel = node.id;
@@ -116,6 +115,8 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
             } else {
                 this.loadButton.disable();
             }
+        } else if (!node.isLeaf()) {
+            this.layersTree.loader.load(node, function () {}, this);        
         }
     },
 
