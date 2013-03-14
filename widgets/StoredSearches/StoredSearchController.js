@@ -88,8 +88,6 @@ Viewer.controller.StoredSearchController = Ext.extend(Viewer.controller.Controll
 
     formFields: null,
 
-    defaultStoreUrl: Viewer.formatUrl('persistenceGeo/filterValues/${featureType}/${fieldName}'),
-
     constructor: function(config) {
 
         Viewer.controller.StoredSearchController.superclass.constructor.call(this, config);
