@@ -100,6 +100,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
 
     _onShow: function () {
         this.layersTree.reload();
+        this.loadButton.setDisabled(!this.showLayers);
     },
 
     showLoading: function (show) {
@@ -115,9 +116,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
             } else {
                 this.loadButton.disable();
             }
-        } else if (!node.isLeaf()) {
-            this.layersTree.loader.load(node, function () {}, this);        
-        }
+        } 
     },
 
     addedLayers: [],
