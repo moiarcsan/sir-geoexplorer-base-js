@@ -101,7 +101,7 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
     	
     	app.on("loginstatechange", this._onLoginStateChanged, this);
 
-        var hidden = this._checkHidden(app.userInfo); 
+        var hidden = this._checkHidden(app.persistenceGeoContext.userInfo); 
         return this._toolItems= gxp.plugins.LocalCertificatesAction.superclass.addActions.apply(this, [{
             buttonText: this.showButtonText ? this.buttonText : '',
             menuText: this.menuText,
@@ -560,12 +560,13 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
        
 
         getLocalityName : function(tidy) {
-            // TODO: Esto depende del usuario municipal que esté logeado.           
-            var result =  "Machalí";
+            var authority = app.persistenceGeoContext.userInfo.authority;
+            var needle = "Municipalidad de";
+            var localityName = authority.substr(authority.indexOf(needle)+needle.length);            
             if(tidy) {
-                result = this._accentsTidy(result);
+                localityName = this._accentsTidy(localityName);
             }
-            return result;
+            return localityName;
         },
         
         _accentsTidy  :  function(s){
