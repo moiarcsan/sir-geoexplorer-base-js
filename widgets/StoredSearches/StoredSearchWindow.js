@@ -67,10 +67,34 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
     },
 
     onShow: function() {
+
+        var options = {
+            url : this.controller.wfsServiceUrl, 
+            maxFeatures: 500,
+            featureType: this.controller.featureType
+        };
+
+        var _strategies = [
+                new OpenLayers.Strategy.BBOX(),
+                new OpenLayers.Strategy.Refresh({
+                    interval : 5000
+                }) ];
+
+        this.controller.layer = new OpenLayers.Layer.Vector(
+            this.controller.title,
+            {
+                'visibility' : true,
+                'strategies' : _strategies,
+                'protocol' : new OpenLayers.Protocol.WFS(options)
+        });
+        this.target.target.mapPanel.map.addLayer(this.controller.layer);
         this.controller.onShow();
     },
 
     onHide: function() {
+        if(!!this.controller.layer){
+            this.target.target.mapPanel.map.removeLayer(this.controller.layer);
+        }
         this.controller.onHide();
     },
 
@@ -105,27 +129,8 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         var ogcFilter = new Viewer.plugins.XmlQueryAdapter()
             .parse(this.controller.queryDef);
 
-        //var wms = new OpenLayers.Layer.WMS('Proyectos_SEA',
-        //    this.controller.wfsServiceUrl,
-        //    {
-        //        layers: 'Proyectos_SEA'
-        //    }
-        //);
-
-        //this.map.addLayers([wms]);
-
-        //var FooRecord = GeoExt.data.LayerRecord.create([
-        //    { name: 'foo' },
-        //    { source: 'foo' }
-        //]);
-        //var layerRec = new FooRecord();
-        //var source = layerRec.get("source");
-        //console.log(source);
-        //layerRec.setLayer(wms);
-
-        //var fm = window.app.tools.featuremanager;
-        //fm.setLayer(layerRec);
-        //fm.setFeatureStore(ogcFilter, true);
+        this.controller.layer.filter = ogcFilter;
+        this.controller.layer.refresh({force: true});
 
         Ext.Ajax.request({
             url: this.controller.wfsServiceUrl,
