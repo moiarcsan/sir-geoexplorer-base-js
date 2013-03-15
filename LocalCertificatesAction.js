@@ -78,6 +78,8 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
     /** private: property[iconCls]
      */
     iconCls: 'vw-icon-localcertificate-toolbar',
+
+    _toolItems : null,
     
     /** private: method[constructor]
      */
@@ -97,18 +99,15 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
      */
     addActions: function() {
     	
-    	// FIXME: Este código es altamente tentativo.
-    	if(false && !this.target.isAuthorizedIn("ROLE_ADMINISTRATOR")) {
-    		// No añadimos la herramienta
-    		return;
-    	}
+    	app.on("loginstatechange", this._onLoginStateChanged, this);
 
-
-        return gxp.plugins.LocalCertificatesAction.superclass.addActions.apply(this, [{
+        var hidden = this._checkHidden(app.userInfo); 
+        return this._toolItems= gxp.plugins.LocalCertificatesAction.superclass.addActions.apply(this, [{
             buttonText: this.showButtonText ? this.buttonText : '',
             menuText: this.menuText,
             iconCls: this.iconCls,
             tooltip: this.tooltip,
+            hidden: hidden,
             menu: new Ext.menu.Menu({
                 items: [
                     new Ext.menu.Item({
@@ -127,6 +126,26 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
             }),
             scope: this
         }]);
+
+       
+    },
+
+    _onLoginStateChanged : function(sender, userInfo) {
+        var hidden = this._checkHidden(userInfo);
+        var toolButton = this._toolItems[0];
+        if(hidden) {
+            toolButton.hide();
+        } else {
+            toolButton.show();
+        }
+    },
+
+    _checkHidden : function(userInfo) {
+        if(!userInfo || !userInfo.authority || userInfo.authority.indexOf("Municipalidad")==-1){
+            return true;
+        }
+
+        return false;
     },
 
     _showSearchFormHandler : function() {
