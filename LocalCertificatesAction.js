@@ -200,7 +200,7 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
         var baseLayer = new OpenLayers.Layer.WMS(
                 layerName,
                 app.sources.local.url+"/wms",
-                {layers: layerName, outputFormat: "image/png", transparent: true,styles:"polygon"}
+                {layers: layerName, outputFormat: "image/png", transparent: true,styles:"Borde_comuna"}
         );  
 
         
@@ -472,7 +472,7 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
                 srs : Viewer.getMapPanel().map.projection,
                 format:"image/png",
                 transparent:true,
-                styles:"polygon"
+                styles:"Borde_comuna"
             });
         
             var parcelUrl = this._createURL(
