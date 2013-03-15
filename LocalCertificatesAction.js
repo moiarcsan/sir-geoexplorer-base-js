@@ -134,6 +134,18 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
         var hidden = this._checkHidden(userInfo);
         var toolButton = this._toolItems[0];
         if(hidden) {
+
+            // We destroy the search form 
+            var ds =  Viewer.getComponent('LocalCertificatesWindow');
+            if (ds) {
+                Viewer.unregisterComponent("LocalCertificatesWindow");
+                ds.destroy();
+            }
+
+
+            this._cancelMapSelection();
+
+
             toolButton.hide();
         } else {
             toolButton.show();
@@ -162,9 +174,18 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
         if (ds.isVisible()) {
             ds.hide();
         } else {
+
+            this._cancelMapSelection();
             ds.show();
         }
 
+    },
+
+    _cancelMapSelection : function() {
+        // We change the cursor over the map to indicate selection.
+        Ext.select(".olMap").setStyle("cursor","default");
+        var map = Viewer.getMapPanel().map;
+        map.events.unregister("click",this,this._onPropertySelected);
     },
 
     _selectInMapHandler : function() {
