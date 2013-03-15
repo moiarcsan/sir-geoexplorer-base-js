@@ -198,7 +198,13 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
             layerPrefix = layerType;
         }
 
-        return layerPrefix+"_"+this.getLocalityName(true).toUpperCase();
+        var localityName = this.getLocalityName(true).toUpperCase();
+
+        if(!localityName) {
+            return null;
+        }
+
+        return layerPrefix+"_"+localityName;
     },
         
     _onPropertySelected : function(eventData) {
@@ -560,6 +566,11 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
        
 
         getLocalityName : function(tidy) {
+
+            if(!app.persistenceGeoContext.userInfo) {
+                return "";
+            }
+
             var authority = app.persistenceGeoContext.userInfo.authority;
             var needle = "Municipalidad de";
             var localityName = authority.substr(authority.indexOf(needle)+needle.length);            
