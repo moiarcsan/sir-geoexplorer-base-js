@@ -27,11 +27,11 @@ GeoExt.Lang.add(
         folderSaved: "Capa guardada",
         folderSavedText: "La capa %s% ha sido guardada correctamente.",
         folderCancel: "Aviso",
-        folderCancelText: "Error al guardar la capa. Inténtelo de nuevo.",
+        folderCancelText: "Error al guardar la capa. Int\u00e9ntelo de nuevo.",
         addActionMenuText: "A\u00F1adir Capas",
-        addActionTip: "Añadir Capas",
-        addServerText: "Añadir servidor",
-        addButtonText: "Añadir Capas",
+        addActionTip: "A\u00f1adir Capas",
+        addServerText: "A\u00f1adir servidor",
+        addButtonText: "A\u00f1adir Capas",
         untitledText: "Sin T\u00EDtulo",
         addLayerSourceErrorText: "Error obteniendo capabilities de WMS ({msg}).\nPor favor, compruebe la URL y vuelva a intentarlo.",
         availableLayersText: "Capas disponibles",
@@ -43,7 +43,7 @@ GeoExt.Lang.add(
         doneText: "Hecho",
         uploadText: "Subir capas",
         onlyCompatibleText: "S\u00f3lo compatibles",
-        makePersistentText: "¿Desea hacerla persistente?",
+        makePersistentText: "\u00bfDesea hacerla persistente?",
         uploadKMLText: "Subir un KML",
         uploadRasterText: "Subir un Raster",
         uploadShapeText: "Subir archivo ZIP con SHP"
@@ -73,7 +73,7 @@ GeoExt.Lang.add(
         searchWFSDefaultStateText: "Pulsa en 'Consultar' para realizar la petici\u00F3n",
         searchWFSNotFoundStateText: "No se han encontrado elementos con los criterios indicados",
         searchWFSFoundsStateText: "<ul><li>Se han encontrado {0} elementos</li><li>Se han volcado en la capa '{1}'</li></ul>",
-        errorWFSText: "El servicio WFS de SIGESCAT no est\u00E1 disponible. <a href='#' id='error_msg_wfs_detail'\">Informaci00F3n técnica</a>",
+        errorWFSText: "El servicio WFS de SIGESCAT no est\u00E1 disponible. <a href='#' id='error_msg_wfs_detail'\">Informaci00F3n t\u00e9cnica</a>",
         errorWFSDetailsTitleText: "Detalles",
         queryText: "Consultar",
         searcherTitleText: "Buscador",
@@ -108,7 +108,7 @@ GeoExt.Lang.add(
         inProjectionText: "Proyeci\u00F3n del fichero",
         loadText: "Cargar",
         saveLayerTitleText: "Capa a\u00F1adida",
-        saveLayerText: "La capa '{0}' se ha a\u00F1adido de formapermanente.",
+        saveLayerText: "La capa '{0}' se ha a\u00F1adido de forma permanente.",
         saveLayerErrorTitleText: "Se ha producido un error",
         saveLayerErrorText: "se ha producido un error al salvar la capa '{0}'. Por favor, contacte con su administrador",
         labelLayerMaxFeatures: "M\u00e1ximas figuras",
@@ -124,13 +124,17 @@ GeoExt.Lang.add(
     "Viewer.plugins.KMLUploadPanel.prototype": {
         titleLabel: "Nombre",
         titleEmptyText: "Nombre de la capa",
-        makePersistentText: "¿Desea hacer persistente la capa KML '{0}'?"
+        makePersistentText: "\u00bfDesea hacer persistente la capa KML '{0}'?"
     },
 
     "Viewer.plugins.RasterUploadPanel.prototype": {
         windowTitleText: "Crear una nueva capa a partir de un fichero raster",
-        descriptionText: "Escriba el nombre para la nueva capa, seleccione o " + "escriba el sistema de referencia del ráster y seleccione un archivo GeoTIFF " + "o un ZIP con un archivo imagen y un archivo world dentro del mismo." + " (png+pgw, jpg+jgw, tif+tfw).",
-        fileTypeLabelText: "Tipo de fichero",
+        descriptionText: "Escriba el nombre para la nueva capa, seleccione o " + 
+            "escriba el sistema de referencia del r\u00e1ster y seleccione un archivo GeoTIFF " + 
+            "o un ZIP con un archivo imagen y un archivo world dentro del mismo." + 
+            " (png+pgw, jpg+jgw, tif+tfw).",
+        fileTypeLabelText: "Formato de la imagen",
+        fileTypeEmptyText: "Seleccione el formato de la imagen",
         buttonText: "Subir",
         layerNameLabelText: "Nombre",
         layerNameEmptyText: "Nombre de la capa",
@@ -140,15 +144,15 @@ GeoExt.Lang.add(
         chooseFileText: "Buscar",
         titleLabel: "Nombre",
         titleEmptyText: "Nombre de la capa",
-        abstractLabel: "Descripción",
-        abstractEmptyText: "Descripción de la capa",
+        abstractLabel: "Descripci\u00f3n",
+        abstractEmptyText: "Descripci\u00f3n de la capa",
         createLayerWaitMsgText: "Enviando archivo. Por favor espere.",
         createLayerWaitMsgTitleText: "Subida de archivo",
         errorMsgTitle: "Error",
         errorMsg: "Ha habido un error al enviar los datos al servidor",
-        invalidFileExtensionText: "La extensión del archivo debe ser una de: ",
+        invalidFileExtensionText: "La extensi\u00f3n del archivo debe ser una de: ",
         crsEmptyText: "ID del Sistema de Referencia de Coordenadas",
-        invalidCrsText: "El identificador CRS debe ser un código EPSG (ej. EPSG:4326)"
+        invalidCrsText: "El identificador CRS debe ser un c\u00f3digo EPSG (ej. EPSG:4326)"
     },
 
     "Viewer.plugins.ExportToSHP.prototype": {
@@ -209,7 +213,7 @@ GeoExt.Lang.add(
     },
 
     "Viewer.dialog.ChannelTools.prototype": {
-        titleText: "Canales Temáticos",
+        titleText: "Canales Tem\u00e1ticos",
         loadText: 'Cargar',
         closeText: 'Cerrar',
         folderWindowTitleText: 'Carpetas'
@@ -221,13 +225,15 @@ GeoExt.Lang.add(
     },
 
     "gxp.plugins.ChannelToolsAction.prototype": {
-        buttonText: 'Canales Temáticos',
-        menuText: 'Canales Temáticos',
-        tooltip: "Muestra una ventana con una lista de canales " + "temáticos que cargan una serie de capas de una temática " + "determinada en el árbol de capas."
+        buttonText: 'Canales Tem\u00e1ticos',
+        menuText: 'Canales Tem\u00e1ticos',
+        tooltip: "Muestra una ventana con una lista de canales " + 
+            "tem\u00e1ticos que cargan una serie de capas de una tem\u00e1tica " + 
+            "determinada en el \u00e1rbol de capas."
     },
 
     "gxp.plugins.AddTagToMap.prototype": {
-        addTagToMapTooltipText: "Añadir etiqueta al mapa",
+        addTagToMapTooltipText: "A\u00f1adir etiqueta al mapa",
         titlePrompt: "Escriba",
         promptText: "Introduzca el nombre de la etiqueta",
         labelTitleLayer: "Capa de Etiquetas"
@@ -241,19 +247,19 @@ GeoExt.Lang.add(
 
     "Viewer.dialog.ChartWindow.prototype": {
         title: "Iniciativas de Inversi\u00f3n",
-        topTitleText: "CRITERIOS DE BÚSQUEDA",
+        topTitleText: "CRITERIOS DE B\u00daSQUEDA",
         stageText: 'Financiamiento',
-        yearText: 'Año',
+        yearText: 'A\u00f1o',
         sourceText: 'Fuente',
-        financingLineText: 'Línea Financiera',
+        financingLineText: 'L\u00ednea Financiera',
         sectorText: "Sector",
         territorialLevelText: 'Nivel Territorial',
         groupByText: 'Agrupar por',
         proyectosPreinversionText: 'Gobierno Regional',
-        proyectosEjecucionText: 'Servicios Públicos',
+        proyectosEjecucionText: 'Servicios P\u00fablicos',
         graphicButtonText: 'Graficar',
-        centerTitleText: 'Gráfico',
-        eastTitleText: 'Gráfico',
+        centerTitleText: 'Gr\u00e1fico',
+        eastTitleText: 'Gr\u00e1fico',
         xAxisTitle: "Monto (M$)",
         porcionOtrosText: "Otros",
         geoButtonText: "Buscar Iniciativas Georreferenciadas",
@@ -264,35 +270,35 @@ GeoExt.Lang.add(
         buttonText: "Imprimir",
         menuText: "Imprimir",
         tooltip: "Imprimir",
-        errorText: "Ocurrió un error, vuelva a intentarlo en unos instantes."
+        errorText: "Ocurri\u00f3 un error, vuelva a intentarlo en unos instantes."
     },
 
     "Viewer.dialog.PDFPrintWindow.prototype": {
         printText: 'Imprimir',
         downloadImageText: "Descargar imagen",
-        sizeText: "Tamaño",
-        resolutionText: "Resolución",
+        sizeText: "Tama\u00f1o",
+        resolutionText: "Resoluci\u00f3n",
         gridText: "Grilla",
         legendText: "Leyenda",
         logoText: "Logotipo",
         browseText: "Examinar",
         textText: "Texto",
-        titleText: "Título",
+        titleText: "T\u00edtulo",
         fontText: "Fuente",
-        descriptionText: "Descripción",
+        descriptionText: "Descripci\u00f3n",
         northArrowText: "Flecha de norte",
         waitText: "Por favor espere...",
         closeText: "Cerrar",
         logoFileTypeUnsupportedText: "Los tipos de imagen soportados son PNG y JPEG",
-        errorText: "Ocurrió un error, vuelva a intentarlo en unos instantes."
+        errorText: "Ocurri\u00f3 un error, vuelva a intentarlo en unos instantes."
     },
 
     "gxp.plugins.LocalCertificatesAction.prototype": {
         selectInMapText: "Seleccionar en el mapa",
-        searchFormText: "Formulario de búsqueda...",
+        searchFormText: "Formulario de b\u00fasqueda...",
         selectPropertyInMapText: "Por favor, seleccione una propiedad en el mapa.",
-        noParcelSelectedText: "No se seleccionó ninguna parcela, por favor pulse 'Seleccionar en mapa' de nuevo.",
-        errorText: "Ocurrió un error, vuelva a intentarlo en unos instantes.",
+        noParcelSelectedText: "No se seleccion\u00f3 ninguna parcela, por favor pulse 'Seleccionar en mapa' de nuevo.",
+        errorText: "Ocurri\u00f3 un error, vuelva a intentarlo en unos instantes.",
         waitText: "Por favor espere..."
     },
 
@@ -307,7 +313,7 @@ GeoExt.Lang.add(
         predioHeaderText: "Predio",
         noSearchResultsText: "No hay datos para mostrar, pruebe a cambiar el filtro y pulsar 'Buscar'",
         waitText: "Por favor espere...",
-        errorText: "Ocurrió un error, vuelva a intentarlo en unos instantes.",
+        errorText: "Ocurri\u00f3 un error, vuelva a intentarlo en unos instantes.",
         selectInMapText: "Seleccionar en el mapa"
     },
 
@@ -316,9 +322,9 @@ GeoExt.Lang.add(
     },
 
     "gxp.plugins.Zoom.prototype": {
-        zoomInMenuText: "Zoom más",
+        zoomInMenuText: "Zoom m\u00e1s",
         zoomOutMenuText: "Zoom menos",
-        zoomInTooltip: "Zoom más",
+        zoomInTooltip: "Zoom m\u00e1s",
         zoomOutTooltip: "Zoom menos"
     },
 
@@ -330,8 +336,8 @@ GeoExt.Lang.add(
     },
 
     "gxp.plugins.WMSGetFeatureInfo.prototype": {
-        infoActionTip: 'Información del elemento',
-        popupTitle: 'Información del elemento',
+        infoActionTip: 'Informaci\u00f3n del elemento',
+        popupTitle: 'Informaci\u00f3n del elemento',
         buttonText: 'Identificar'
     },
     "gxp.plugins.LayerTree.prototype": {
@@ -339,13 +345,19 @@ GeoExt.Lang.add(
         baseNodeText: "Capa base"
     },
     "gxp.plugins.LoadAdditionalLayersAction.prototype": {
-        menuText: "Ver más Capas",
-        buttonText: "Ver más Capas",
+        menuText: "Ver m\u00e1s Capas",
+        buttonText: "Ver m\u00e1s Capas",
         tooltip: "Abre una ventana en la que puede seleccionar " + "capas adicionales para visualizar en el visor."
 
     },
     "Viewer.dialog.PointInformation.prototype": {
         descriptionText: "Haga click en el mapa para ver las coordenadas del lugar pulsado."
+    },
+    "Ext.form.TextField.prototype": {
+        blankText: "Este campo no puede estar vacío",
+        minLengthText : 'La longitud mínima de este campo es {0}',    
+        maxLengthText : 'La longitud máxima de este campo es {0}',
+    
     }
 
 });
