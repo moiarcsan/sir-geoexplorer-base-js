@@ -42,6 +42,11 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
      *  contain the entire extent.  Default is false.
      */
     closest: false,
+    
+    /** api: config[autoExpand]
+     *  ``String`` Reference to feature grid table to expand on show
+     */
+    autoExpand: "table",
 
     constructor: function(config) {
 
@@ -75,6 +80,14 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
 
     onShow: function() {
 
+        this.manager = this.target.target.tools[this.featureManager];
+
+        this.grid = new gxp.grid.FeatureGrid({
+            map: this.map,
+            ignoreFields: ['the_geom'],
+            height: 200
+        });
+
         var options = {
             url : this.controller.wfsServiceUrl, 
             maxFeatures: 500,
@@ -98,30 +111,24 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
 
 
         this.target.target.mapPanel.map.addLayer(this.controller.layer);
-
-        //TODO: Handle add to viewer
-        // var  recordType = GeoExt.data.LayerRecord.create([
-        //         {name: "name", type: "string"}
-        //     ]
-        // );
-
-        // this.recordLayer = new recordType({
-        //     name: this.controller.layer.name,
-        //     source: this.target.target.sources.local,
-        //     layer: this.controller.layer
-        // }, this.controller.layer);
-        //this.target.target.addLayers([this.recordLayer]);
-        //this.target.target.selectLayer(this.recordLayer);
+        // copy to record type
+        var  recordType = GeoExt.data.LayerRecord.create([{name: "name", type: "string"}]);
+        this.recordLayer = new recordType({
+            name: this.controller.layer.name,
+            source: this.target.target.sources.local,
+            layer: this.controller.layer
+        }, this.controller.layer);
+        this.target.target.selectLayer(this.recordLayer);
         this.controller.onShow();
+
+        this.onSearchButtonClicked();
     },
 
     onHide: function() {
-        // if(!!this.recordLayer){
-
-        // }else 
         if(!!this.controller.layer){
             this.target.target.mapPanel.map.removeLayer(this.controller.layer);
         }
+        this.showGrid(false);
         this.controller.onHide();
     },
 
@@ -159,63 +166,32 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         this.controller.layer.filter = ogcFilter;
         this.controller.layer.refresh({force: true});
 
-        Ext.Ajax.request({
-            url: this.controller.wfsServiceUrl,
-            method: 'GET',
-            params: {
-                service: 'wfs',
-                version: '1.1.0',
-                request: 'describeFeatureType',
-                typeName : this.controller.featureType
-            },
-            success: function(response) {
+        this.manager.loadFeatures(ogcFilter, function (){  
 
-                var attributeStore = new GeoExt.data.AttributeStore({   
-                    listeners: {
-                        load: function(store, records, options) {
-                            var attributes = [];
-                            for (var i = 0; i< records.length; i++) {
-                                if (records[i].data.name != 'the_geom') {
-                                    attributes.push({
-                                        name: records[i].data.name,
-                                        type: records[i].data.type
-                                    });
-                                }
-                            }
+            this.grid.setStore(this.manager.featureStore);
 
-                            var store = new gxp.data.WFSFeatureStore({
-                                url: this.controller.wfsServiceUrl,
-                                featureType: this.controller.featureType,
-                                fields: attributes,
-                                ogcFilter: ogcFilter,
-                                autoLoad: true,
-                                listeners: {
-                                    load: function() {
-                                        this.loadMask.hide();
-                                    },
-                                    exception: function(e) {
-                                        this.onQueryLoadError(e);
-                                    },
-                                    scope: this
-                                }
-                            });
+            this.btnZoomToResult.setDisabled(false);
+            this.btnPrint.setDisabled(false);
 
-                            this.grid.setStore(store);
+            this.showGrid(true);
 
-                            this.btnZoomToResult.setDisabled(false);
-                            this.btnPrint.setDisabled(false);
+            this.loadMask.hide();
+        }, this);
+    },
 
-                        },
-                        exception: function(e) {
-                            this.onQueryLoadError(e);
-                        },
-                        scope: this
-                    }
-                });;
-
-                attributeStore.loadData(response.responseXML);
-            }.createDelegate(this)
-        });
+    showGrid: function(show){
+        var expandContainer = Ext.getCmp(this.autoExpand);
+        if(show){
+            expandContainer.expand();
+            if (expandContainer.ownerCt && expandContainer.ownerCt instanceof Ext.Panel) {
+                expandContainer.ownerCt.expand();
+            }
+        }else{
+            expandContainer.collapse();
+            if (expandContainer.ownerCt && expandContainer.ownerCt instanceof Ext.Panel) {
+                expandContainer.ownerCt.collapse();
+            }
+        }
         
     },
 
@@ -301,8 +277,11 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
                 this.btnClear = new Ext.Button({
                     text: 'Limpiar',
                     listeners: {
-                        click: this.controller.clearForm,
-                        scope: this.controller
+                        click: function(){
+                            this.controller.clearForm();
+                            this.onSearchButtonClicked();
+                        },
+                        scope: this
                     }   
                 }),
                 this.btnSearch = new Ext.Button({
@@ -351,19 +330,7 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
                     }
                 }));
             }
-        }
-
-        formContainer.add(this.grid = new gxp.grid.FeatureGrid({
-            //title: 'title',
-            map: this.map,
-            ignoreFields: ['the_geom'],
-            //width: 400,
-            height: 200
-        }));
-
-        this.grid.getTitle = function (){
-            return this.title;
-        };
+        }     
 
         this.add(formContainer);
     },
