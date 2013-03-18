@@ -116,6 +116,9 @@ gxp.plugins.StoredSearchAction = Ext.extend(gxp.plugins.Tool, {
                         mapPanel: mapPanel,
                         map: mapPanel.map,
                         controller: this.controller,
+                        target:this.target,
+                        featureManager:this.featureManager,
+                        featureGrid:this.featureGrid,
                         wfsServiceUrl: this.url
                     });
                     Viewer.registerComponent(this.controller, ds);
