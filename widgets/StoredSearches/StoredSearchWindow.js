@@ -35,6 +35,13 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
     controller: null,
 
     formFields: null,
+    
+    /** api: config[closest]
+     *  ``Boolean`` Find the zoom level that most closely fits the specified
+     *  extent. Note that this may result in a zoom that does not exactly
+     *  contain the entire extent.  Default is false.
+     */
+    closest: false,
 
     constructor: function(config) {
 
@@ -71,7 +78,8 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         var options = {
             url : this.controller.wfsServiceUrl, 
             maxFeatures: 500,
-            featureType: this.controller.featureType
+            featureType: this.controller.featureType,
+            projection: this.target.target.mapPanel.map.projection
         };
 
         var _strategies = [
@@ -87,11 +95,30 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
                 'strategies' : _strategies,
                 'protocol' : new OpenLayers.Protocol.WFS(options)
         });
+
+
         this.target.target.mapPanel.map.addLayer(this.controller.layer);
+
+        //TODO: Handle add to viewer
+        // var  recordType = GeoExt.data.LayerRecord.create([
+        //         {name: "name", type: "string"}
+        //     ]
+        // );
+
+        // this.recordLayer = new recordType({
+        //     name: this.controller.layer.name,
+        //     source: this.target.target.sources.local,
+        //     layer: this.controller.layer
+        // }, this.controller.layer);
+        //this.target.target.addLayers([this.recordLayer]);
+        //this.target.target.selectLayer(this.recordLayer);
         this.controller.onShow();
     },
 
     onHide: function() {
+        // if(!!this.recordLayer){
+
+        // }else 
         if(!!this.controller.layer){
             this.target.target.mapPanel.map.removeLayer(this.controller.layer);
         }
@@ -175,6 +202,7 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
 
                             this.grid.setStore(store);
 
+                            this.btnZoomToResult.setDisabled(false);
                             this.btnPrint.setDisabled(false);
 
                         },
@@ -239,6 +267,16 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         var formContainer = new Ext.FormPanel({
             labelWidth: 120,
             buttons: [
+                this.btnZoomToResult = new Ext.Button({
+                    text: 'Centrar',
+                    disabled: true,
+                    listeners: {
+                        click: function(){
+                            this.zoomToLayerExtent();
+                        },
+                        scope: this
+                    }
+                }),
                 this.btnPrint = new Ext.Button({
                     text: 'Imprimir',
                     disabled: true,
@@ -348,6 +386,33 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         }
         this.controller.formFields = this.formFields;
         this.controller.onAfterRender();
+    },
+
+    /** api: method[zoomToLayerExtent]
+     * 
+     * Zoom to layer extent
+     */
+    zoomToLayerExtent: function() {
+        var map = this.target.target.mapPanel.map;
+        var layer = this.controller.layer;
+        if (OpenLayers.Layer.Vector) {
+            dataExtent = layer instanceof OpenLayers.Layer.Vector &&
+                layer.getDataExtent();
+        }
+        var extent =  layer.restrictedExtent || dataExtent || layer.maxExtent || map.maxExtent;
+        if (extent) {
+            // respect map properties
+            var restricted = map.restrictedExtent || map.maxExtent;
+            if (restricted) {
+                extent = new OpenLayers.Bounds(
+                    Math.max(extent.left, restricted.left),
+                    Math.max(extent.bottom, restricted.bottom),
+                    Math.min(extent.right, restricted.right),
+                    Math.min(extent.top, restricted.top)
+                );
+            }
+            map.zoomToExtent(extent, this.closest);
+        }
     }
 });
 
