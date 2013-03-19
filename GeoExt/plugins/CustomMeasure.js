@@ -204,7 +204,6 @@ gxp.plugins.CustomMeasure = Ext.extend(gxp.plugins.Tool, {
                     });
                     if(event.measure > 0) {
                         var px = measureControl.handler.lastUp;
-                        this._lastUp=px;
                         var p0 = this.target.mapPanel.getPosition();
                         measureToolTip.targetXY = [p0[0] + px.x, p0[1] + px.y];
                         measureToolTip.show();
@@ -224,8 +223,22 @@ gxp.plugins.CustomMeasure = Ext.extend(gxp.plugins.Tool, {
                         listeners: {hide: cleanup}
                     });
                      if(event.measure > 0) {
-                         var px = this._lastUp;
                          var p0 = this.target.mapPanel.getPosition();
+
+                         var components = event.geometry.components;
+                         var lastPointIdx = components.length-1;
+                         if(components.length==1 && components[0].components) {
+                            // Area points are inside a single element, ad have one more point (because the poligon closes);
+                            components = components[0].components;
+                            lastPointIdx = components.length-2;                            
+                         }
+
+                         var lastLonLat = components[lastPointIdx];
+                         lastLonLat = {
+                            lon : lastLonLat.x,
+                            lat : lastLonLat.y
+                         };
+                         var px = this.target.mapPanel.map.getViewPortPxFromLonLat(lastLonLat);
                          measureToolTip.targetXY = [p0[0] + px.x, p0[1] + px.y];
                          measureToolTip.show();
                      }
