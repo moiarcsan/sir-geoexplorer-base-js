@@ -132,7 +132,7 @@ GeoExt.Lang.add(
         descriptionText: "Escriba el nombre para la nueva capa, seleccione o " + 
             "escriba el sistema de referencia del r\u00e1ster y seleccione un archivo GeoTIFF " + 
             "o un ZIP con un archivo imagen y un archivo world dentro del mismo." + 
-            " (png+pgw, jpg+jgw, tif+tfw).",
+            " (png+pngw, jpg+jpgw, tif+tifw).",
         fileTypeLabelText: "Formato de la imagen",
         fileTypeEmptyText: "Seleccione el formato de la imagen",
         buttonText: "Subir",
@@ -356,7 +356,7 @@ GeoExt.Lang.add(
     "Ext.form.TextField.prototype": {
         blankText: "Este campo no puede estar vacío",
         minLengthText : 'La longitud mínima de este campo es {0}',    
-        maxLengthText : 'La longitud máxima de este campo es {0}',
+        maxLengthText : 'La longitud máxima de este campo es {0}'
     
     }
 

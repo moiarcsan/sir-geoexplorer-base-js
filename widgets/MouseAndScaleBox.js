@@ -52,7 +52,7 @@ Viewer.widgets.MouseAndScaleBox = Ext.extend(Ext.Window, {
     ptype: "vw_mouseandscalebox",
     bodyCssClass: 'vw_mouseandscalebox',
     width: 250,
-    height: 200,
+    height: 190,
     x: 5,
  //   floating:true,
     frame: true,
@@ -299,7 +299,7 @@ Viewer.widgets.MouseAndScaleBox = Ext.extend(Ext.Window, {
         } else {
             this.setTitle(null);
             this.minimized = false;
-            this.anchorTo(Viewer.getMapPanel().body, 'bl', [5, -175]);
+            this.anchorTo(Viewer.getMapPanel().body, 'bl', [5, -height]);
         }
     }
 
