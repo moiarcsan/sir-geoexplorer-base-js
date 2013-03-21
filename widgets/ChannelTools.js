@@ -33,6 +33,12 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
     loadText: 'Load',
     closeText: 'Close',
     folderWindowTitleText: 'Folders',
+     
+    /** api: config[track]
+     *  ``Boolean``
+     *  Send a call to stats module to track this component.
+     */
+    track: true,
 
     showLayers: false,
     restBaseUrl: "rest",
@@ -147,7 +153,9 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
         } else {
             if ( !! this.selectedChannel) {
                 this.clearLayers();
-                Viewer.trackUrl('channels/' + this.selectedChannelName);
+                if(this.track){
+                    Viewer.trackUrl('modules/Canales_Tematicos');
+                }
                 this.persistenceGeoContext.loadChannelWithFilters(this.selectedChannel, this.selectedChannelName,[
                     "ONLY_CHANNEL_MARK","RECURSIVE_FOLDER_LAYERS_MARK"]);
             }
