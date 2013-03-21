@@ -34,6 +34,12 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
     closeText: 'Close',
     folderWindowTitleText: 'Folders',
      
+    /** api: config[showZones]
+     *  ``Boolean``
+     *  Show zones node.
+     */
+    showZones: true,
+     
     /** api: config[track]
      *  ``Boolean``
      *  Send a call to stats module to track this component.
@@ -77,6 +83,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
         this.layersTree = new Viewer.widgets.ChannelToolsLayersTree({
             restBaseUrl: this.restBaseUrl,
             showLayers: this.showLayers,
+            showZones: this.showZones,
             listeners: {
                 click: this.onTreeNodeClick,
                 scope: this

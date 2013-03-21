@@ -52,6 +52,12 @@
         zonesNode: null,
         // rest component
         restBaseUrl: "rest",
+     
+        /** api: config[showZones]
+         *  ``Boolean``
+         *  Show zones node.
+         */
+        showZones: true,
 
         /** i18n **/
         channelsNodeText: 'Channels',
@@ -83,15 +89,17 @@
                 filter: rootFilter,
                 expanded: true
             }));
-            // Zone nodes
-            rootNode.appendChild(this.zonesNode = new Ext.tree.TreeNode({
-                id: 'zone-node',
-                filter: zonesFilter,
-                text: this.zonesNodeText,
-                type: NODE_TYPES.ZONES_ROOT,
-                leaf: false,
-                expanded: true
-            }));
+            if(this.showZones){
+                // Zone nodes
+                rootNode.appendChild(this.zonesNode = new Ext.tree.TreeNode({
+                    id: 'zone-node',
+                    filter: zonesFilter,
+                    text: this.zonesNodeText,
+                    type: NODE_TYPES.ZONES_ROOT,
+                    leaf: false,
+                    expanded: true
+                }));
+            }
 
             Viewer.widgets.ChannelToolsLayersTree.superclass.constructor.call(this, Ext.apply({
                 border: false,
@@ -167,7 +175,9 @@
         reload: function () {
             this._lastIdNode = 0;
             this.loader.load(this.channelsNode, function () {}, this);    
-            this.loader.load(this.zonesNode, function () {}, this);
+            if(this.showZones){
+                this.loader.load(this.zonesNode, function () {}, this);
+            }
             
         },
 

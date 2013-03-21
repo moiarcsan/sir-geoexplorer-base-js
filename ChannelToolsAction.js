@@ -71,6 +71,12 @@ gxp.plugins.ChannelToolsAction = Ext.extend(gxp.plugins.Tool, {
     /** private: property[iconCls]
      */
     iconCls: 'vw-icon-channel-tools',
+     
+    /** api: config[track]
+     *  ``Boolean``
+     *  Send a call to stats module to track this component.
+     */
+    track: true,
     
     /** private: method[constructor]
      */
@@ -102,7 +108,8 @@ gxp.plugins.ChannelToolsAction = Ext.extend(gxp.plugins.Tool, {
                     ds = new Viewer.dialog.ChannelTools({
                         mapPanel: mapPanel,
                         map: mapPanel.map, 
-                        persistenceGeoContext: this.target.persistenceGeoContext
+                        persistenceGeoContext: this.target.persistenceGeoContext,
+                        showZones: this.showZones
                     });
                     Viewer.registerComponent('ChannelTools', ds);
                 }
@@ -110,7 +117,9 @@ gxp.plugins.ChannelToolsAction = Ext.extend(gxp.plugins.Tool, {
                     ds.hide();
                 } else {
                     ds.show();
-                    Viewer.trackUrl('modules/Canales_Tematicos');
+                    if(this.track){
+                        Viewer.trackUrl('modules/Canales_Tematicos');
+                    }
                 }
 
             },
