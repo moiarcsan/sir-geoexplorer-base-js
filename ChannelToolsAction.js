@@ -54,19 +54,19 @@ gxp.plugins.ChannelToolsAction = Ext.extend(gxp.plugins.Tool, {
     /** api: config[buttonText]
      *  ``String`` Text to show button
      */
-    buttonText: 'Canales Temáticos',
+    buttonText: 'Thematic Channels',
      
     /** api: config[menuText]
      *  ``String``
      *  Text for show in menu item (i18n).
      */
-    menuText: 'Canales Temáticos',
+    menuText: 'Thematic Channels',
 
     /** api: config[tooltip]
      *  ``String``
      *  Text for channel tool tooltip (i18n).
      */
-    tooltip: 'Canales Temáticos',
+    tooltip: 'Thematic Channels',
     
     /** private: property[iconCls]
      */

@@ -29,9 +29,10 @@
 Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
 
     /** i18n **/
-    titleText: 'Canales Temáticos',
+    titleText: 'Thematic Channels',
     loadText: 'Load',
     closeText: 'Close',
+    folderWindowTitleText: 'Folders',
 
     showLayers: false,
     restBaseUrl: "rest",
@@ -47,11 +48,13 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
     constructor: function (config) {
 
         Viewer.dialog.ChannelTools.superclass.constructor.call(this, Ext.apply({
-            title: config.showLayers ? 'Carpetas' : this.titleText,
+            title: config.showLayers ? this.folderWindowTitleText : this.titleText,
             width: 500,
             height: 400,
             layout: 'fit',
-            closeAction: 'hide'
+            closeAction: 'hide',
+            bodyCssClass: 'vw-channel-window',
+            cls: 'channel-tools-window'
         }, config));
 
         this.on({
@@ -98,6 +101,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
 
     _onShow: function () {
         this.layersTree.reload();
+        this.loadButton.setDisabled(!this.showLayers);
     },
 
     showLoading: function (show) {
@@ -105,7 +109,6 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
     },
 
     onTreeNodeClick: function (node, checked) {
-
         if (!this.showLayers) {
             if (node.isLeaf()) {
                 this.selectedChannel = node.id;
@@ -114,7 +117,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
             } else {
                 this.loadButton.disable();
             }
-        }
+        } 
     },
 
     addedLayers: [],
@@ -127,7 +130,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
                 // nothing to do
             }
         }
-        this.addedLayers = new Array();
+        this.addedLayers = [];
     },
 
     onLoadButtonClicked: function() {
@@ -145,7 +148,8 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
             if ( !! this.selectedChannel) {
                 this.clearLayers();
                 Viewer.trackUrl('channels/' + this.selectedChannelName);
-                this.persistenceGeoContext.loadChannel(this.selectedChannel, this.selectedChannelName);
+                this.persistenceGeoContext.loadChannelWithFilters(this.selectedChannel, this.selectedChannelName,[
+                    "ONLY_CHANNEL_MARK","RECURSIVE_FOLDER_LAYERS_MARK"]);
             }
         }
     }
