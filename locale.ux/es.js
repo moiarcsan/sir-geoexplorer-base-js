@@ -340,6 +340,13 @@ GeoExt.Lang.add(
         popupTitle: 'Informaci\u00f3n del elemento',
         buttonText: 'Identificar'
     },
+
+    "Viewer.PointSymbolizerMod.prototype":{
+        uploadFileEmptyText: 'Selecciona un icono...',
+        uploadFileLabel: 'Icono',
+        waitMsgText: 'Espere...'
+    },
+    
     "gxp.plugins.LayerTree.prototype": {
         overlayNodeText: "Capas",
         baseNodeText: "Capa base"
@@ -357,7 +364,6 @@ GeoExt.Lang.add(
         blankText: "Este campo no puede estar vacío",
         minLengthText : 'La longitud mínima de este campo es {0}',    
         maxLengthText : 'La longitud máxima de este campo es {0}'
-    
     }
 
 });
