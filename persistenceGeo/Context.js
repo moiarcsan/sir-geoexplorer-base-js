@@ -324,7 +324,7 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         }
        
         this.loadedLayers[this._groupIndexes] = [];
-        this._groupIndexes++;
+       
         this.treeManager.addGroup({
             group: groupLayers,
             groupIndex: this._groupIndexes
@@ -343,6 +343,8 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
                 }
             }
         }
+
+         this._groupIndexes++;
     },
 
     addLayer: function (layer, nameLayer, folderID, params) {
