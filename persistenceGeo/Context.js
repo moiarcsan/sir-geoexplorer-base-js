@@ -308,7 +308,7 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
     onLoadLayers: function(layers, layerTree, groupName, layersVisible) {
         var groupLayers = null;
         
-        if(typeof(groupName!="undefined")) {
+        if(typeof(groupName)!="undefined") {
         	groupLayers = groupName;
         } else {
         	 if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
