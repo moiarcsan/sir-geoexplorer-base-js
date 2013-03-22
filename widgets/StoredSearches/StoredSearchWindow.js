@@ -342,12 +342,17 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
      */
     zoomToLayerExtent: function() {
         var map = this.target.target.mapPanel.map;
-        var layer = this.controller.layer;
-        if (OpenLayers.Layer.Vector) {
-            dataExtent = layer instanceof OpenLayers.Layer.Vector &&
-                layer.getDataExtent();
+
+        var extent = this._manager.getPageExtent(); // get extent from page
+        if(!extent){
+            var layer = this.controller.layer;
+            if (OpenLayers.Layer.Vector) {
+                dataExtent = layer instanceof OpenLayers.Layer.Vector &&
+                    layer.getDataExtent();
+            }
+            extent =  layer.restrictedExtent || dataExtent || layer.maxExtent || map.maxExtent;
         }
-        var extent =  layer.restrictedExtent || dataExtent || layer.maxExtent || map.maxExtent;
+        
         if (extent) {
             // respect map properties
             var restricted = map.restrictedExtent || map.maxExtent;
