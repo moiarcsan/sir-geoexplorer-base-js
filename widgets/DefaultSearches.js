@@ -132,22 +132,20 @@ Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
     },
 
     drawCenter: function(pCenter) {
-
-        var style_yellow =  new OpenLayers.Style({
-            externalGraphic : '../../img/marker-blue.png',
-            fill : false,
-            stroke : false,
-            pointRadius : 0,
-            graphicWidth : 18,
-            graphicHeight : 30,
-            fillOpacity : 1,
-            graphicXOffset : -30 / 2,
-            graphicYOffset : -18 / 2,
-            //cursor : 'pointer',
-            graphicZIndex : 1
-        });
+        var styleYellow = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+        styleYellow.externalGraphic = '../../img/marker-yellow.png';
+        styleYellow.fill = false;
+        styleYellow.stroke = false;
+        styleYellow.pointRadius = 0;
+        styleYellow.graphicWidth = 18;
+        styleYellow.graphicHeight = 30;
+        styleYellow.fillOpacity = 1;
+        styleYellow.graphicXOffset = -30 / 2;
+        styleYellow.graphicYOffset = -18 / 2;
+        styleYellow.graphicZIndex = 1;
+        
         var point = new OpenLayers.Geometry.Point(pCenter.lon, pCenter.lat);
-        var pointFeature = new OpenLayers.Feature.Vector(point, null, style_yellow);
+        var pointFeature = new OpenLayers.Feature.Vector(point, null, styleYellow);
 
         this.vectorLayer.addFeatures([pointFeature]);
 
