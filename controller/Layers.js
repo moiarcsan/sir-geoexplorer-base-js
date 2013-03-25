@@ -41,10 +41,15 @@ Viewer.controller.Layers = Ext.extend(Viewer.controller.Controller, {
 
         window.app.on({
             beforelayerselectionchange: function(layerRecord) {
-                this.fireEvent('layerBeforeSelected', layerRecord.getLayer());
+                if(layerRecord){
+                    this.fireEvent('layerBeforeSelected', layerRecord.getLayer());    
+                }
+                
             },
             layerselectionchange: function(layerRecord) {
-                this.fireEvent('layerSelected', layerRecord.getLayer());
+                if(layerRecord) {
+                    this.fireEvent('layerSelected', layerRecord.getLayer());
+                }
             },
             scope: this
         });
