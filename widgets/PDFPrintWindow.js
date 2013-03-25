@@ -94,7 +94,7 @@ Viewer.dialog.PDFPrintWindow = Ext.extend(Ext.Window,{
 			beforerender : this.onBeforeRender,
 			show: this._onShow,
 			hide: function() {
-				this.destroy()
+				this.destroy();
 				Viewer.unregisterComponent('PDFPrintWindow');
 			},
 			scope : this
@@ -131,12 +131,12 @@ Viewer.dialog.PDFPrintWindow = Ext.extend(Ext.Window,{
 
 		var mapPanel = Viewer.getMapPanel();
 		
-		var previewMap = this._previewMapPanel.map;
+
 		
 		this._previewMapPanel.layers = new GeoExt.data.LayerStore({
 			map: this._previewMapPanel,
 			layers: layers
-		})
+		});
 		this._previewMapPanel.map.zoomToExtent(mapPanel.map.getExtent());
 
 		this._graticuleControl.deactivate();		
@@ -203,7 +203,7 @@ Viewer.dialog.PDFPrintWindow = Ext.extend(Ext.Window,{
 				click: this._onDownloadImageClicked,
 				scope: this
 			}
-		}))
+		}));
 		
 		this._printButton = this.addButton(new Ext.Button({
 			text : this.printText,
@@ -327,7 +327,7 @@ Viewer.dialog.PDFPrintWindow = Ext.extend(Ext.Window,{
     		buttonText: this.browseText,
     		regex: /^.*\.(png|jpeg|jpg)$/i,
     		regexText: this.logoFileTypeUnsupportedText    
-    	}
+    	};
     },
 
     _thirdFormRow : function () {
@@ -351,7 +351,7 @@ Viewer.dialog.PDFPrintWindow = Ext.extend(Ext.Window,{
     				selectOnFocus : true
     			}
     		]
-    	}
+    	};
     },
 
     _fourthFormRow : function () {
@@ -374,7 +374,7 @@ Viewer.dialog.PDFPrintWindow = Ext.extend(Ext.Window,{
     				selectOnFocus : true
     			}
     		]
-    	}
+    	};
     },
 
     _fifthFormRow : function () {
@@ -665,7 +665,7 @@ Viewer.dialog.PDFPrintWindow = Ext.extend(Ext.Window,{
             failure: function(response) {
                 Ext.MessageBox.updateProgress(1);
                 Ext.MessageBox.hide();
-                Ext.MessageBox.alert("", this.errorText)
+                Ext.MessageBox.alert("", this.errorText);
             },
             scope:this
         });
