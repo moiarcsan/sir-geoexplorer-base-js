@@ -145,11 +145,17 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
             if (this.authUser && this.userInfo.admin) {
                 // The user admin views public and pending layers.
             	this.parser.loadPendingLayerRequests(this.authUser,function(layers, layerTree){
-	        		this_.onLoadLayers(layers, layerTree, this_.publishRequestsGroupText);
+	        		this_.onLoadLayers(layers, layerTree, {
+                        groupName: this_.publishRequestsGroupText,
+                        removable: false
+                    });
 	        	});
 	            	
             	this.parser.loadPublicLayers(this.authUser, function(layers, layerTree){
-            		this_.onLoadLayers(layers, layerTree, this_.publicLayersGroupText, false);
+            		this_.onLoadLayers(layers, layerTree, {
+                        groupName: this_.publicLayersGroupText, 
+                        visible: false
+                    });
             	});
             	
 
@@ -305,11 +311,17 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         }
     },
 
-    onLoadLayers: function(layers, layerTree, groupName, layersVisible) {
+    onLoadLayers: function(layers, layerTree, options) {
         var groupLayers = null;
+
+        var layersOptions = {};
+
+        if(typeof(options)!="undefined") {
+            layersOptions = options;
+        }
         
-        if(typeof(groupName)!="undefined") {
-        	groupLayers = groupName;
+        if(typeof(layersOptions.groupName)!="undefined") {
+        	groupLayers = layersOptions.groupName;
         } else {
         	 if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
                  groupLayers = String.format(this.defaultAuthGroup, this.userInfo.authority);
@@ -318,9 +330,14 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
              }
         }        
         
-        var visibility = true;
-        if(typeof(layersVisible)!="undefined") {
-        	visibility = layersVisible;
+        var visible = true;
+        if(typeof(layersOptions.visible)!="undefined") {
+        	visible = layersOptions.visible;
+        }
+
+        var removable = true;
+        if(typeof(layersOptions.removable)!="undefined") {
+            removable =layersOptions.removable;
         }
        
         this.loadedLayers[this._groupIndexes] = [];
@@ -335,8 +352,9 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
                     var layer = layers[i];
                     layer.groupLayers = this._groupIndexes;
                     //Layers must be visible by default
-                    layer.setVisibility(visibility);
+                    layer.setVisibility(visible);
                     this.map.addLayer(layer);
+                    layer.metadata.removable = removable;
                     this.loadedLayers[this._groupIndexes].push(layer);
                 } catch (e) {
                     // TODO: handle

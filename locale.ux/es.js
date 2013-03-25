@@ -360,6 +360,11 @@ GeoExt.Lang.add(
         minLengthText : 'La longitud mínima de este campo es {0}',    
         maxLengthText : 'La longitud máxima de este campo es {0}'
     
+    },
+
+    "PersistenceGeo.Parser.prototype" :{
+        loadingText: "Por favor, espere..."
     }
+
 
 });
