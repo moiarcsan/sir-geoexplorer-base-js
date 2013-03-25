@@ -198,7 +198,7 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
         // We call the initial view for the user.
         app.tools.zoomToInitialValues.zoomToInitialValues();
 
-
+         var map = Viewer.getMapPanel().map;
         // We wait for the user's click
         map.events.register("click", this, this._onPropertySelected);
     },
