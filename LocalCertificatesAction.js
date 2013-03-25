@@ -198,7 +198,7 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
         // We call the initial view for the user.
         app.tools.zoomToInitialValues.zoomToInitialValues();
 
-
+         var map = Viewer.getMapPanel().map;
         // We wait for the user's click
         map.events.register("click", this, this._onPropertySelected);
     },
@@ -440,7 +440,7 @@ gxp.plugins.LocalCertificatesAction = Ext.extend(gxp.plugins.Tool, {
             margin: 30, // mm
             title: "Certificado Municipal",
             items: this.createPDFDocument(this.pdfData),
-            outputFile: "certificado_municipal_" + this.pdfData.resultLabel.replace(/ /g, "_") + ".pdf",
+            outputFile: "certificado_municipal_" + this.pdfData.resultLabel.replace(/ /g, "_"),
             keepFile: true
         };
 

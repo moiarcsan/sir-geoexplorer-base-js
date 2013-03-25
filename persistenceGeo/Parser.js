@@ -50,6 +50,10 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
 	REST_COMPONENT_URL: "rest",
 	REQUEST_METHOD_POST: "POST",
 	REQUEST_METHOD_GET: "GET",
+
+
+
+    loadingText: "Loading, please wait...",
 	
 	LOADERS:{
 		"WMS":1,
@@ -901,7 +905,7 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
 		tempForm.getForm().load({
 			url: url,
 			headers: {Accept: 'application/json, text/javascript, */*; q=0.01'},
-			waitMsg: 'loading...',
+			waitMsg: this.loadingText,
 			params : params,
 	        fileUpload: true,
 			success: onsuccess ? onsuccess : function(){},

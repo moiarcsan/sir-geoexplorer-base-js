@@ -161,8 +161,8 @@ GeoExt.Lang.add(
         defaultAuthGroup: "Capas de '{0}'",
         defaultUsersGroup: "Capas del usuario '{0}'",
         channelGroupText: "Capas del canal '{0}'",
-        publicLayersGroupText: "Capas públicas",
-        publishRequestsGroupText: "Solicitudes de publicación"
+        publicLayersGroupText: "Capas p\u00fablicas",
+        publishRequestsGroupText: "Solicitudes de publicaci\u00f3n"
     },
 
     "PersistenceGeo.tree.MakeLayerPersistent.prototype": {
@@ -258,7 +258,7 @@ GeoExt.Lang.add(
     "gxp.plugins.PDFPrintAction.prototype": {
         buttonText: "Imprimir",
         menuText: "Imprimir",
-        tooltip: "Herramienta de impresión de la vista actual del mapa",
+        tooltip: "Herramienta de impresi\u00f3n de la vista actual del mapa",
         errorText: "Ocurri\u00f3 un error, vuelva a intentarlo en unos instantes."
     },
     /* Vista inicial */
@@ -285,16 +285,16 @@ GeoExt.Lang.add(
     },
     /* Barra de herramientas de informacion, edicion y exportar */
     "GeoExplorer.Composer.prototype": {
-    	/* Información */
-        tooltipInfo: "Herramientas de información",
-        /* Edición */
-        tooltipEdition: "Herramientas de edición",
+    	/* Informaci\u00f3n */
+        tooltipInfo: "Herramientas de informaci\u00f3n",
+        /* Edici\u00f3n */
+        tooltipEdition: "Herramientas de edici\u00f3n",
         /* Exportar */
-        tooltipExport: "Herramientas de exportación",
-        /* Información de elementos */
-        tooltipGetFeatureInfo: "Herramienta de información de los elementos de una capa"
+        tooltipExport: "Herramientas de exportaci\u00f3n",
+        /* Informaci\u00f3n de elementos */
+        tooltipGetFeatureInfo: "Herramienta de informaci\u00f3n de los elementos de una capa"
     },
-    /* Añadir capas */
+    /* A\u00f1adir capas */
     "gxp.plugins.AddLayers.prototype": {
         addActionMenuText: "A\u00F1adir Capas",
         addActionTip: "Herramientas para importar capas de diferentes formatos",
@@ -320,50 +320,50 @@ GeoExt.Lang.add(
         tooltip: "Herramientas para emitir certificados municipales"
     },
     
-    /* Instrumentos de planificación */
+    /* Instrumentos de planificaci\u00f3n */
     "gxp.plugins.PlanificationToolsAction.prototype": {
-    	tooltip: "Instrumentos de planificación territorial"
+    	tooltip: "Instrumentos de planificaci\u00f3n territorial"
     },
-    /* Iniciativas de inversión*/
+    /* Iniciativas de inversi\u00f3n*/
     "Viewer.plugins.ChartWindowAction.prototype": {
-    	tooltip: "Abre la ventana que muestra las Iniciativas de Inversión"
+    	tooltip: "Abre la ventana que muestra las Iniciativas de Inversi\u00f3n"
     },
     /* Log in/out */
     //TODO
     
-    /** Barra de herramientas de información **/
+    /** Barra de herramientas de informaci\u00f3n **/
     "Viewer.widgets.InformationToolbar.prototype": {
-    	/* Búsquedas predeterminadas */
-    	tooltipDefaultSearches: "Abre un cuadro de diálogo en el que se permiten realizar búsquedas predetermindas",
+    	/* B\u00fasquedas predeterminadas */
+    	tooltipDefaultSearches: "Abre un cuadro de di\u00e1logo en el que se permiten realizar b\u00fasquedas predetermindas",
     	/* Medir longitud */
-    	tooltipLengthMeasure: "Permite dibujar una línea en el mapa, de la que se mostrará su longitud",
-    	/* Medir área */
-    	tooltipAreaMeasure: "Permite dibujar un polígono en el mapa, del que se mostrrá su área",
+    	tooltipLengthMeasure: "Permite dibujar una l\u00ednea en el mapa, de la que se mostrar\u00e1 su longitud",
+    	/* Medir \u00e1rea */
+    	tooltipAreaMeasure: "Permite dibujar un pol\u00edgono en el mapa, del que se mostrr\u00e1 su \u00e1rea",
         /* Consultar la capa seleccionada */
     	tooltipQueryLayer: "Permite realizar una consulta sobre la capa seleccionada",
         /* Consultar coordenadas */
-    	tooltipPointInformation: "Muestra información sobre las coordenadas seleccionadas",
+    	tooltipPointInformation: "Muestra informaci\u00f3n sobre las coordenadas seleccionadas",
         /* Consultar metadatos */
-    	tooltipMetadataLayer: "Muestra información de los metadatos de la capa seleccionada."
+    	tooltipMetadataLayer: "Muestra informaci\u00f3n de los metadatos de la capa seleccionada."
     },    
-    /** Barra de herramientas de edición **/
+    /** Barra de herramientas de edici\u00f3n **/
     "Viewer.widgets.EditionToolbar.prototype": {
-    	/* Selección de elementos */
+    	/* Selecci\u00f3n de elementos */
     	tooltipSelectFeature: "Permite seleccionar un elemento en el mapa",
-    	/* Añadir etiqueta */
-    	tooltipAddTag: "Permite añadir una etiqueta en el mapa",
-    	/* Añadir punto */
-    	tooltipAddPoint: "Permite añadir un punto a una capa de puntos",
-    	/* Añadir línea */
-    	tooltipAddLine: "Permite añadir una línea a una capa de líneas",
-    	/* Añadir polígono */
-    	tooltipAddPolygon: "Permite añadir un polígono a una capa de polígonos",
+    	/* A\u00f1adir etiqueta */
+    	tooltipAddTag: "Permite a\u00f1adir una etiqueta en el mapa",
+    	/* A\u00f1adir punto */
+    	tooltipAddPoint: "Permite a\u00f1adir un punto a una capa de puntos",
+    	/* A\u00f1adir l\u00ednea */
+    	tooltipAddLine: "Permite a\u00f1adir una l\u00ednea a una capa de l\u00edneas",
+    	/* A\u00f1adir pol\u00edgono */
+    	tooltipAddPolygon: "Permite a\u00f1adir un pol\u00edgono a una capa de pol\u00edgonos",
     	/* Crear bufer */
     	tooltipAddBuffer: "Permite crear un bufer sobre un elemente del mapa",
     	/* Crear nuevo elemento */
     	tooltipAddNewElement: "Permite crear un nuevo elemento sobre una capa",
     },
-    /** Barra de herramientas de exportación **/
+    /** Barra de herramientas de exportaci\u00f3n **/
     "Viewer.widgets.ImportExportToolbar.prototype": {
     	/* Exportar KML */
     	tooltipExportKML: "Permite exportar una capa a formato KML",
@@ -441,9 +441,15 @@ GeoExt.Lang.add(
     },
 
     "Ext.form.TextField.prototype": {
-        blankText: "Este campo no puede estar vacío",
-        minLengthText : 'La longitud mínima de este campo es {0}',    
-        maxLengthText : 'La longitud máxima de este campo es {0}'
+        blankText: "Este campo no puede estar vac\u00edo",
+        minLengthText : 'La longitud m\u00ednima de este campo es {0}',    
+        maxLengthText : 'La longitud m\u00e1xima de este campo es {0}'
+
+    },
+
+    "PersistenceGeo.Parser.prototype" :{
+        loadingText: "Por favor, espere..."
     }
+
 
 });
