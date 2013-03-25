@@ -76,15 +76,18 @@ PersistenceGeo.tree.RemoveLayer = Ext.extend(gxp.plugins.RemoveLayer, {
             return;
         }
 
-        // We confirm the deletion.
+        
         var layer = record.getLayer();
         var userInfo = app.persistenceGeoContext.userInfo;
-        if ( !! layer.layerID // Only persisted layers have layer id.
-        &&
-        (userInfo.admin && layer.authId === null // The layer is public and the user is admin, we can remove
-        ||
-        userInfo.authorityId == layer.authId)) { // The layer is from the authority the user is assigned to.
+       
+        // We only delete from the server if the layer is persisted (has layerID), the user is logged
+        // (userInfo exists) and the user can delete the layer (because is admin and layer is public or the layer's is
+        // owned by the user's authority.)            
+        if ( !! layer.layerID && userInfo
+            && (userInfo.admin && layer.authId === null || userInfo.authorityId == layer.authId)) { 
 
+
+            // We confirm the deletion.
             Ext.Msg.show({
                 title: '',
                 msg: 'La capa se eliminará permanentemente del servidor.<br><br>¿Realmente desea borrar la capa?',
