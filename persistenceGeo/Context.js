@@ -52,6 +52,8 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
     defaultAuthGroup: "'{0}' authority layers",
     defaultUsersGroup: "'{0}' users layers",
     channelGroupText: "Channel '{0}' layers",
+    publicLayersGroupText:"Public layers",
+    publishRequestsGroupText: "Publication request",
 
     SAVE_MODES: {
         GROUP: 1,
@@ -105,6 +107,9 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
     constructor: function (config) {
 
         Ext.apply(this, config);
+        
+        // The count of user layer groups loadded.
+        this._groupIndexes =100;
 
         PersistenceGeo.Context.superclass.constructor.call(this, config);
 
@@ -137,9 +142,28 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         var this_ = this;
         this.clearLayers();
         if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
-            this.parser.loadLayersByGroup(this.authUser, function (layers, layerTree) {
-                this_.onLoadLayers(layers, layerTree);
-            }, false);
+            if (this.authUser && this.userInfo.admin) {
+                // The user admin views public and pending layers.
+            	this.parser.loadPendingLayerRequests(this.authUser,function(layers, layerTree){
+	        		this_.onLoadLayers(layers, layerTree, {
+                        groupName: this_.publishRequestsGroupText,
+                        removable: false
+                    });
+	        	});
+	            	
+            	this.parser.loadPublicLayers(this.authUser, function(layers, layerTree){
+            		this_.onLoadLayers(layers, layerTree, {
+                        groupName: this_.publicLayersGroupText, 
+                        visible: false
+                    });
+            	});
+            	
+
+            } else if(this.authUser){
+            	this.parser.loadLayersByGroup(this.authUser, function (layers, layerTree) {
+                    this_.onLoadLayers(layers, layerTree);
+                }, false);
+            }
         } else if (!!this.SAVE_MODES.USER == this.saveModeActive) {
             this.parser.loadLayersByUser(this.userLogin, function (layers, layerTree) {
                 this_.onLoadLayers(layers, layerTree);
@@ -287,32 +311,58 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         }
     },
 
-    onLoadLayers: function(layers, layerTree) {
+    onLoadLayers: function(layers, layerTree, options) {
         var groupLayers = null;
-        if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
-            groupLayers = String.format(this.defaultAuthGroup, this.userInfo.authority);
-        } else if (!!this.SAVE_MODES.USER == this.saveModeActive) {
-            groupLayers = String.format(this.defaultUsersGroup, this.userLogin);
+        
+        var layersOptions = {};
+
+        if(typeof(options)!="undefined") {
+            layersOptions = options;
         }
-        this.loadedLayers[this.authUser] = [];
+        
+        if(typeof(layersOptions.groupName)!="undefined") {
+        	groupLayers = layersOptions.groupName;
+        } else {
+        	 if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
+                 groupLayers = String.format(this.defaultAuthGroup, this.userInfo.authority);
+             } else if (!!this.SAVE_MODES.USER == this.saveModeActive) {
+                 groupLayers = String.format(this.defaultUsersGroup, this.userLogin);
+             }
+        }        
+        
+        var visible = true;
+        if(typeof(layersOptions.visible)!="undefined") {
+        	visible = layersOptions.visible;
+        }
+
+        var removable = true;
+        if(typeof(layersOptions.removable)!="undefined") {
+            removable =layersOptions.removable;
+        }
+       
+        this.loadedLayers[this._groupIndexes] = [];
+       
         this.treeManager.addGroup({
             group: groupLayers,
-            groupIndex: this.authUser
+            groupIndex: this._groupIndexes
         });
         if (!!layers) {
             for (var i = 0; i < layers.length; i++) {
                 try {
                     var layer = layers[i];
-                    layer.groupLayers = this.authUser;
+                    layer.groupLayers = this._groupIndexes;
                     //Layers must be visible by default
-                    layer.setVisibility(true);
+                    layer.setVisibility(visible);
                     this.map.addLayer(layer);
-                    this.loadedLayers[this.authUser].push(layer);
+                    layer.metadata.removable = removable;
+                    this.loadedLayers[this._groupIndexes].push(layer);
                 } catch (e) {
                     // TODO: handle
                 }
             }
         }
+
+         this._groupIndexes++;
     },
 
     addLayer: function (layer, nameLayer, folderID, params) {

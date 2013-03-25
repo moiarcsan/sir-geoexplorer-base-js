@@ -52,7 +52,7 @@
         zonesNode: null,
         // rest component
         restBaseUrl: "rest",
-     
+
         /** api: config[showZones]
          *  ``Boolean``
          *  Show zones node.
@@ -89,6 +89,7 @@
                 filter: rootFilter,
                 expanded: true
             }));
+
             if(this.showZones){
                 // Zone nodes
                 rootNode.appendChild(this.zonesNode = new Ext.tree.TreeNode({
@@ -175,9 +176,11 @@
         reload: function () {
             this._lastIdNode = 0;
             this.loader.load(this.channelsNode, function () {}, this);    
+
             if(this.showZones){
                 this.loader.load(this.zonesNode, function () {}, this);
             }
+            
         },
 
         onBeforeAppend: function (tree, parent, node) {

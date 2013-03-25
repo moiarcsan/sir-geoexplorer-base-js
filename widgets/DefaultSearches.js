@@ -29,8 +29,12 @@
 Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
 
     LAYER_NAME: 'DefaultSearchLayer',
+    layerTitle: 'Resultado de la búsqueda',
 
     mapProjection: null,
+    
+    /** i18n **/
+    titleTool: "Predetermine searches",
 
     constructor: function(config) {
 
@@ -45,18 +49,21 @@ Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
         this.vectorLayer = layerController.create({
             type: 'Vector',
             name: this.LAYER_NAME,
-            options: {}
+            title: this.layerTitle,
+            options: {displayInLayerSwitcher:false}
         });
 
         // This window is never destroyed so adding the layer once
         // in the constructor is enough.
         config.map.addLayer(this.vectorLayer);
+        
+        
 
         this.mapProjection = config.map.getProjectionObject();
 
         Viewer.dialog.DefaultSearches.superclass.constructor.call(this, Ext.apply({
             cls: 'vw_default_searches_window',
-            title: 'Búsquedas predeterminadas',
+            title: this.titleTool,
             width: 380,
             height: 260,
             closeAction: 'hide',
@@ -68,34 +75,37 @@ Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
         this.searchByCoordinates.clear();
         this.cmbProvince.setValue('');
         this.cmbMunicipality.setValue('');
+        this.vectorLayer.setVisibility(true);
     },
 
     onHide: function() {
         this.vectorLayer.removeAllFeatures();
+        this.vectorLayer.setVisibility(true);
     },
 
     onBtnUtmClicked: function(coords) {
         this.vectorLayer.removeAllFeatures();
-        this.setCenter(coords.getPoint(this.mapProjection));
+        this.setCenter(coords.getPoint(this.mapProjection), 14);
     },
 
     onBtnLonLatClicked: function(coords) {
         this.vectorLayer.removeAllFeatures();
-        this.setCenter(coords.getPoint(this.mapProjection));
+        this.setCenter(coords.getPoint(this.mapProjection), 14);
     },
 
     onBtnDecimalClicked: function(coords) {
         this.vectorLayer.removeAllFeatures();
-        this.setCenter(coords.getPoint(this.mapProjection));
+        this.setCenter(coords.getPoint(this.mapProjection), 14);
     },
 
     onCmbProvinceSelected: function(combo, record, index) {
         this.btnMunicipalitySearch.disable();
         this.cmbMunicipality.enable();
         this.cmbMunicipality.clearValue();
-        this.cmbMunicipality.store.load({
+        var id = record.get('id');
+        this.cmbMunicipality.store.reload({
             params: {
-                parentId: record.get('id')
+                parentId: id
             }
         });
     },
@@ -106,13 +116,17 @@ Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
 
     onBtnMunicipalitySearchClicked: function() {
 
+
         var record = this.cmbMunicipality.store.getById(this.cmbMunicipality.getValue());
-        var center = record.get('center');
-        var zoom = record.get('zoom');
-        var geometry = record.get('geometry');
+        var geometryString = record.get('extension');
+        var format = new OpenLayers.Format.GeoJSON();
+        var featureCollection = format.read(geometryString);
+        var reprojected = featureCollection[0].geometry.clone().transform("EPSG:32719", this.map.getProjectionObject());
+        var center = reprojected.getCentroid();
+        
 
         this.vectorLayer.removeAllFeatures();
-        this.drawPolygon(center, zoom, geometry);
+        this.drawPolygon(center, reprojected);
     },
 
     setCenter: function(pCenter, zoom) {
@@ -121,59 +135,41 @@ Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
     },
 
     drawCenter: function(pCenter) {
-
-        var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-        style_blue.strokeColor = 'blue'; 
-        style_blue.fillColor = 'blue';
+        var styleYellow = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+        styleYellow.externalGraphic = '../../img/marker-yellow.png';
+        styleYellow.fill = false;
+        styleYellow.stroke = false;
+        styleYellow.pointRadius = 0;
+        styleYellow.graphicWidth = 18;
+        styleYellow.graphicHeight = 30;
+        styleYellow.fillOpacity = 1;
+        styleYellow.graphicXOffset = -30 / 2;
+        styleYellow.graphicYOffset = -18 / 2;
+        styleYellow.graphicZIndex = 1;
+        
         var point = new OpenLayers.Geometry.Point(pCenter.lon, pCenter.lat);
-        var pointFeature = new OpenLayers.Feature.Vector(point, null, style_blue);
+        var pointFeature = new OpenLayers.Feature.Vector(point, null, styleYellow);
 
         this.vectorLayer.addFeatures([pointFeature]);
 
-        //var style = { 
-        //    strokeColor: '#000000',
-        //    strokeOpacity: 0.8,
-        //    strokeWidth: 1
-        //};
-
-        //var hPoints = [
-        //    new OpenLayers.Geometry.Point(pCenter.lon - 10, pCenter.lat),
-        //    new OpenLayers.Geometry.Point(pCenter.lon + 10, pCenter.lat)
-        //];
-
-        //var vPoints = [
-        //    new OpenLayers.Geometry.Point(pCenter.lon, pCenter.lat - 10),
-        //    new OpenLayers.Geometry.Point(pCenter.lon, pCenter.lat + 10)
-        //];
-
-        //var hLine = new OpenLayers.Geometry.LineString(hPoints);
-        //var vLine = new OpenLayers.Geometry.LineString(vPoints);
-
-        //var hLineFeature = new OpenLayers.Feature.Vector(hLine, null, style);
-        //var vLineFeature = new OpenLayers.Feature.Vector(vLine, null, style);
-
-        //this.vectorLayer.addFeatures([hLineFeature, vLineFeature]);
     },
 
-    drawPolygon: function(center, zoom, geometry) {
+    drawPolygon: function(center,  geometry) {
+
 
         var style_green = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-        style_green.strokeColor = 'green'; 
-        style_green.fillColor = 'green';
+        style_green.strokeColor = '#FFD700'; 
+        style_green.fillColor = '#FFD700';
 
         var points = [];
-        for (var i = 0, l = geometry.length; i < l; i++) {
-            points.push(new OpenLayers.Geometry.Point(geometry[i].lon, geometry[i].lat));
-        }
 
-        var lring = new OpenLayers.Geometry.LinearRing(points);
-        var polygon = new OpenLayers.Geometry.Polygon([lring]);
-        var polygonFeature = new OpenLayers.Feature.Vector(polygon, null, style_green);
+        
+        var polygonFeature = new OpenLayers.Feature.Vector(geometry, null, style_green);
 
         this.vectorLayer.addFeatures([polygonFeature]);
 
-        var pCenter = new OpenLayers.LonLat(center.lon, center.lat);
-        this.setCenter(pCenter, zoom);
+        var pCenter = new OpenLayers.LonLat(center.x, center.y);
+        this.map.zoomToExtent(geometry.getBounds());
     },
 
     onBeforeRender: function() {
@@ -187,15 +183,15 @@ Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
                 // store configs
                 autoDestroy: true,
                 proxy: new Ext.data.HttpProxy({
-                    url: 'http://localhost:8080/sir-ohiggins/rest/persistenceGeo/getZonesByType?type=P',
+                    url: app.persistenceGeoContext.defaultRestUrl + '/persistenceGeo/getZonesByType?type=P',
                     method: 'GET'
                 }),
                 storeId: 'store-provinces',
-                restFul: true,
+                restFul: false,
                 // reader configs
                 root: 'data',
                 idProperty: 'id',
-                fields: ['id', 'code', 'name', 'type', 'extension', 'createDate', 'updateDate', 'enabled']
+                fields: ['id', 'code', 'name', 'type', 'extension']
             }),
             valueField: 'id',
             displayField: 'name',
@@ -213,26 +209,28 @@ Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
             emptyText: 'Seleccione una provincia primero',
             disabled: true,
             editable: false,
-            store: new Viewer.store.Municipalities(),
+            //store: new Viewer.store.Municipalities(),
             store: new Ext.data.JsonStore({
                 // store configs
                 autoDestroy: true,
                 proxy: new Ext.data.HttpProxy({
-                    url: 'http://localhost:8080/sir-ohiggins/rest/persistenceGeo/getZonesByParent',
+                    url: app.persistenceGeoContext.defaultRestUrl + '/persistenceGeo/getZonesByParent',
                     method: 'GET'
                 }),
                 storeId: 'store-municipalities',
-                restFul: true,
+                restFul: false,
                 // reader configs
                 root: 'data',
                 idProperty: 'id',
-                fields: ['id', 'code', 'name', 'type', 'extension', 'createDate', 'updateDate', 'enabled']
+                fields: ['id', 'code', 'name', 'type', 'extension']
             }),
             valueField: 'id',
             displayField: 'name',
             triggerAction: 'all',
+            mode: 'local',
             flex: 1,
             anchor: '98%',
+            autoLoad: false,
             listeners: {
                 select: this.onCmbMunicipalitySelected,
                 scope: this
@@ -248,7 +246,7 @@ Viewer.dialog.DefaultSearches = Ext.extend(Ext.Window, {
         });
 
         var padding = 'padding: 10px 16px;';
-        var border = 'border: 0px solid transparent;'
+        var border = 'border: 0px solid transparent;';
 
         var c = {
             xtype: 'panel',

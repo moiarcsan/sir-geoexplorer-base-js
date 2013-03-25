@@ -33,7 +33,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
     loadText: 'Load',
     closeText: 'Close',
     folderWindowTitleText: 'Folders',
-     
+
     /** api: config[showZones]
      *  ``Boolean``
      *  Show zones node.
@@ -160,6 +160,7 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
         } else {
             if ( !! this.selectedChannel) {
                 this.clearLayers();
+
                 if(this.track){
                     Viewer.trackUrl('channels/' + this.selectedChannelName);
                 }
