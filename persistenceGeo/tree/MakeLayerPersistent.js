@@ -58,11 +58,15 @@ PersistenceGeo.tree.MakeLayerPersistent = Ext.extend(gxp.plugins.Tool, {
 
         this.target.on("layerselectionchange", function(record) {
             selectedLayer = record;
-            removeLayerAction.setDisabled(
-                this.target.isAuthorized() 
-                    &&  !!record 
-                    &&  record.getLayer().layerID
-            );
+            var persistibleLayer = false;
+            if(record) {
+                var layer = record.getLayer();
+                persistibleLayer = typeof(layer.layerID)=="undefined" && layer.metadata.removable && !layer.metadata.labelLayer;
+            }
+            
+            var userInfo = app.persistenceGeoContext.userInfo;
+            // We cant persist already persisted layers.
+            removeLayerAction.setDisabled(!userInfo || !persistibleLayer);
         }, this);
         var enforceOne = function(store) {
             removeLayerAction.setDisabled(
@@ -87,7 +91,8 @@ PersistenceGeo.tree.MakeLayerPersistent = Ext.extend(gxp.plugins.Tool, {
         var saveWindow = new Ext.Window({
             title: this.makePersistentText,
             closeAction: 'hide',
-            width:500
+            width:500,
+            height: 130
         });
         var savePanel = new Viewer.widgets.SaveLayerPanel({
             layerRecord: layerRecord,
