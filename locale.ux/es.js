@@ -355,8 +355,8 @@ GeoExt.Lang.add(
     },
     
     "gxp.plugins.LoadAdditionalLayersAction.prototype": {
-        menuText: "Ver m\u00e1s Capas",
-        buttonText: "Ver m\u00e1s Capas",
+        menuText: "Ver m\u00e1s",
+        buttonText: "Ver m\u00e1s",
         tooltip: "Abre una ventana en la que puede seleccionar " + "capas adicionales para visualizar en el visor."
 
     },
