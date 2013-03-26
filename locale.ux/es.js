@@ -483,6 +483,10 @@ GeoExt.Lang.add(
 
     "PersistenceGeo.Parser.prototype" :{
         loadingText: "Por favor, espere..."
-    }
+    },
+    "Viewer.dialog.DefaultSearches.prototype": {
+        titleTool: "Búsquedas Predeterminadas",
+        
+    } 
 
 });
