@@ -66,7 +66,7 @@ PersistenceGeo.tree.MakeLayerPersistent = Ext.extend(gxp.plugins.Tool, {
             
             var userInfo = app.persistenceGeoContext.userInfo;
             // We cant persist already persisted layers.
-            removeLayerAction.setDisabled(!userInfo || !persistibleLayer);
+            removeLayerAction.setDisabled(!userInfo || !user.admin || !persistibleLayer);
         }, this);
         var enforceOne = function(store) {
             removeLayerAction.setDisabled(
