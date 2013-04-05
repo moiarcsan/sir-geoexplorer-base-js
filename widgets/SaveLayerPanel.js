@@ -436,12 +436,19 @@ Viewer.widgets.SaveLayerPanel = Ext.extend(Ext.Container, {
         
         if(!!this.layerRecord
             && !! this.layerRecord.getLayer()){
-            if(params.type=="WFS") {
-                 app.persistenceGeoContext.saveLayerFromParams(params, this.onLayerSave, this.onSaveLayerException,this);
+             var layer = this.layerRecord.getLayer();
+
+            if(layer.metadata && layer.metadata.layerResourceId) {
+                // Temporal layers saved in the server.
+                  app.persistenceGeoContext.saveLayerResource(
+
+                   layer.metadata.layerResourceId, params, this.onLayerSave, this.onSaveLayerException,this);   
+            } else if(params.type=="WFS" || params.type=="WMS") {
+                // Remote temporal layers.
+                app.persistenceGeoContext.saveLayerFromParams(params, this.onLayerSave, this.onSaveLayerException,this);
             } else {
-                app.persistenceGeoContext.saveLayerResource(
-                    this.layerRecord.getLayer().metadata.layerResourceId, params, this.onLayerSave, this.onSaveLayerException,this);   
-            }
+                throw new Error("Unsupported temporal layer for persistence.!")
+ç            }
         }
     },
 
