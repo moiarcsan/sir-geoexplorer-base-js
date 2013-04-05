@@ -171,12 +171,20 @@ Viewer.dialog.ChannelTools = Ext.extend(Ext.Window, {
            
             var addedLayersCount = checkedNodes.length-alreadyAddedCount;
             var msg;
-            if(addedLayersCount==0) {
-                msg="No se añadió ninguna capa, ya que todas las seleccionadas ya estaban presentes."
-            } else if(addLayersCount = 1) {
-                msg="Se añadió sólo una capa, el resto de las seleccionadas ya estaban presentes."
+            if(alreadyAddedCount>0) {
+                if(addedLayersCount==0) {
+                    msg="No se añadió ninguna capa, ya que todas las seleccionadas ya estaban presentes."
+                } else if(addLayersCount == 1) {
+                    msg="Se añadió sólo una capa, el resto de las seleccionadas ya estaban presentes."
+                } else {
+                    msg="Se añadieron "+addedLayersCount+" capas, el resto de las seleccionadas ya estaban presentes."
+                }
             } else {
-                msg="Se añadieron "+addedLayersCount+" capas, el resto de las seleccionadas ya estaban presentes."
+                if(addedLayersCount == 1) {
+                    msg="Se añadió la capa seleccionada."
+                } else {
+                    msg="Se añadieron las "+addedLayersCount+" capas seleccionadas."
+                }
             }
 
             Ext.Msg.alert("",msg);
