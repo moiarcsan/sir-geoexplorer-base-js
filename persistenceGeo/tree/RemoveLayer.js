@@ -46,7 +46,7 @@ PersistenceGeo.tree.RemoveLayer = Ext.extend(gxp.plugins.RemoveLayer, {
 
         this.target.on("layerselectionchange", function(record) {
             this._selectedLayer = record;
-            var canDelete = true;
+            var cannotDelete = true;
             if (record) {
                 var layer = record.getLayer();
 
