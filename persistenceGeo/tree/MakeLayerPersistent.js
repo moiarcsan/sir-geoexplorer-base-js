@@ -96,7 +96,7 @@ PersistenceGeo.tree.MakeLayerPersistent = Ext.extend(gxp.plugins.Tool, {
         });
         var savePanel = new Viewer.widgets.SaveLayerPanel({
             layerRecord: layerRecord,
-            authorized: app.persistenceGeoContext.userInfo && app.persistenceGeoContext.userInfo.userId,
+            authorized: app.persistenceGeoContext.userInfo && app.persistenceGeoContext.userInfo.username,
             target: this.target,
             saveWindow: saveWindow,
             outputTarget: false
