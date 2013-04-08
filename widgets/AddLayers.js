@@ -53,9 +53,9 @@ Ext.namespace("Viewer.plugins");
 Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
 
     ptype: "vw_addlayers",
-    
 
     /** i18n **/
+    addButtonText: "Add Layers",
     previewLayerText: "Preview of '{0}' layer",
     panelSRSText: "SRS",
     onlyCompatibleText: "Only compatibles",
@@ -63,7 +63,19 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
     uploadKMLText: "Upload a KML",
     uploadRasterText: "Upload a Raster",
     uploadShapeText: "Upload a SHP in a ZIP file",
-    
+    addWMSLayerActionText: "Add WMS layer...",
+    temporaryLayerActionText: "Temporary layer...",
+    addWFSLayerActionText: "WFS...",
+    findActionMenuText: "Find Layers...",
+    tempLayerWindowTitleText: "Create Temporary Layer",
+    tempLayerPointText: "Point",
+    tempLayerLineText: "Line",
+    tempLayerPolygonText: "Polygon",
+    tempLayerNameLabelText: "Name",
+    tempLayerCreateButtonText: "Create",
+    tempLayerCancelButtonText: "Cancel",
+    tempLayerDescriptionText: "Create a temporary layer of selected geometry type",
+
     uploadShpWindow: null,
 
     /** Indicate show preview window **/
@@ -80,10 +92,10 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
 
     /** Default prewiev window height **/
     previewHeight: 256,
-    
+
     /** api: method[addActions]
      */
-    addActions: function() {
+    addActions: function () {
         var commonOptions = {
             tooltip : this.addActionTip,
             text: this.addActionText,
@@ -95,39 +107,41 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
         if (this.initialConfig.search || (this.uploadSource)) {
             var items = [new Ext.menu.Item({
                 iconCls: 'vw-icon-add-layer-wms',
-                tooltip: "slvnñsklnvlksdn",
-                text: this.addActionMenuText, 
+                tooltip: "Add WMS Layer",
+                text: this.addWMSLayerActionText,
                 handler: this.showCapabilitiesGrid,
                 scope: this
             })];
 
             items.push(new Ext.menu.Item({
-                iconCls: 'vw-icon-add-layer-wfs', 
-                text: "WFS",
+                iconCls: 'vw-icon-add-layer-wfs',
+                text: this.addWFSLayerActionText,
+                tooltip: "Add WFS Feature Type",
                 handler: this.showCatalogueWFSSearch,
                 scope: this
             }));
             items.push(new Ext.menu.Item({
-                iconCls: 'vw-icon-add-layer-vector', 
-                text: "Capa temporal",
+                iconCls: 'vw-icon-add-layer-vector',
+                text: this.temporaryLayerActionText,
+                tooltip: "Add temporary layer",
                 handler: this.createTemporaryLayer,
                 scope: this
             }));
-            
+
             if (this.initialConfig.search) {
                 items.push(new Ext.menu.Item({
-                    iconCls: 'gxp-icon-addlayers', 
+                    iconCls: 'gxp-icon-addlayers',
                     text: this.findActionMenuText,
                     handler: this.showCatalogueSearch,
                     scope: this
                 }));
             }
-            
+
             items.push(new Ext.menu.Item({
-            	iconCls: 'vw-icon-add-layer-shp',
-            	text: this.uploadShapeText,
-            	handler: this.uploadShapeHandler,
-            	scope: this
+                iconCls: 'vw-icon-add-layer-shp',
+                text: this.uploadShapeText,
+                handler: this.uploadShapeHandler,
+                scope: this
             }));
             items.push(new Ext.menu.Item({
                 iconCls: 'gxp-icon-filebrowse',
@@ -162,8 +176,8 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
             });
         }
         var actions = gxp.plugins.AddLayers.superclass.addActions.apply(this, [options]);
-        
-        this.target.on("ready", function() {
+
+        this.target.on("ready", function () {
             if (this.uploadSource) {
                 var source = this.target.layerSources[this.uploadSource];
                 if (source) {
@@ -188,37 +202,35 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
 
         return actions;
     },
-    
+
     /**
      * api: method[uploadShapeHandler]
      */
-    uploadShapeHandler: function() {
-    	if (!this.uploadShpWindow) {
-    		this.uploadShpWindow = new Viewer.plugins.ShpWizard();
-    		this.uploadShpWindow.on({
-    			'close': {
-    				fn: function() {
-    					this.uploadShpWindow = null;    					
-    				},
-    				scope: this
-    			}
-    		});
-
-    	}
-    	this.uploadShpWindow.show();
-    	
+    uploadShapeHandler: function () {
+        if (!this.uploadShpWindow) {
+            this.uploadShpWindow = new Viewer.plugins.ShpWizard();
+            this.uploadShpWindow.on({
+                'close': {
+                    fn: function () {
+                        this.uploadShpWindow = null;
+                    },
+                    scope: this
+                }
+            });
+        }
+        this.uploadShpWindow.show();
     },
 
     /**
      * api: method[uploadShapeHandler]
      */
-    uploadRasterHandler: function() {
+    uploadRasterHandler: function () {
         if (!this.uploadRasterWindow) {
             this.uploadRasterWindow = new Viewer.plugins.RasterUploadPanel();
             this.uploadRasterWindow.on({
                 'close': {
-                    fn: function() {
-                        this.uploadRasterWindow = null;                        
+                    fn: function () {
+                        this.uploadRasterWindow = null;
                     },
                     scope: this
                 }
@@ -235,7 +247,7 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
      *  If this tool is provided an ``upload`` property, a button will be created
      *  that launches a window with a :class:`gxp.LayerUploadPanel`.
      */
-    createUploadRasterButton: function(Cls){
+    createUploadRasterButton: function (Cls) {
         Cls = Cls || Ext.Button;
         var uploadConfig = this.initialConfig.upload || !!this.initialConfig.uploadSource;
         var button;
@@ -249,8 +261,8 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                 text: this.uploadRasterText,
                 iconCls: "gxp-icon-filebrowse",
                 hidden: !this.uploadSource,
-                handler: function() {
-                    this.target.doAuthorized(this.uploadRoles, function() {
+                handler: function () {
+                    this.target.doAuthorized(this.uploadRoles, function () {
                         var panel = new Viewer.plugins.RasterUploadPanel(Ext.apply({
                             title: this.outputTarget ? this.uploadText : undefined,
                             url: url,
@@ -265,7 +277,7 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                                 msgTarget: "side"
                             },
                             listeners: {
-                                uploadcomplete: function(panel, detail) {
+                                uploadcomplete: function (panel, detail) {
                                     var layers = detail["import"].tasks[0].items;
                                     var item, names = {}, resource, layer;
                                     for (var i=0, len=layers.length; i<len; ++i) {
@@ -279,7 +291,7 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                                         names[layer.namespace.name + ":" + layer.name] = true;
                                     }
                                     this.selectedSource.store.load({
-                                        callback: function(records, options, success) {
+                                        callback: function (records, options, success) {
                                             var gridPanel, sel;
                                             if (this.capGrid && this.capGrid.isVisible()) {
                                                 gridPanel = this.capGrid.get(0).get(0);
@@ -459,8 +471,8 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
      */
     addLayers: function(records, isUpload) {
 
-        if(records.length == 1
-            && records[0].getLayer() instanceof OpenLayers.Layer.Vector){
+        if(records.length == 1 && 
+            records[0].getLayer() instanceof OpenLayers.Layer.Vector){
             this.target.mapPanel.map.addLayer(records[0].getLayer());
             this.layer = records[0].getLayer();
             records[0].getLayer().events.register("loadend", this, this.onLoadEnd);
@@ -915,12 +927,12 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                     attribution: layer.attribution,
                     maxExtent: OpenLayers.Bounds.fromArray(
                         record.get("llbbox")
-                    )
+                    ),
 //                    .transform(
 //                        new OpenLayers.Projection(Viewer.GEO_PROJECTION),
 //                        this.mapPanel.map.getProjectionObject()
 //                    )
-                    ,
+                    
                     isBaseLayer: false //Default overlay
                 }
             );
@@ -943,13 +955,14 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
     createTemporaryLayer: function() {
 
         var Dialog = Ext.extend(Ext.Window, {
+            parentAction: null,
 
             constructor: function(config) {
 
                 Dialog.superclass.constructor.call(this, Ext.apply({
-                    title: 'Crear capa temporal',
+                    title: config.parentAction.tempLayerWindowTitleText,
                     width: 400,
-                    height: 160,
+                    height: 200,
                     layout: 'fit'
                 }, config));
 
@@ -986,29 +999,36 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                 this.add({
                     xtype: 'form',
                     layout: 'form',
+                    padding: 10,
                     items: [
+                        {
+                            xtype: 'label',
+                            cls: 'toolDescription',
+                            text: this.parentAction.tempLayerDescriptionText
+                        },
                         this.radioGroup = new Ext.form.RadioGroup({
                             items: [
-                                new Ext.form.Radio({ boxLabel: 'Punto', name: 'geometry', inputValue: 'POINT', checked: true }),
-                                new Ext.form.Radio({ boxLabel: 'Línea', name: 'geometry', inputValue: 'LINE' }),
-                                new Ext.form.Radio({ boxLabel: 'Polígono', name: 'geometry', inputValue: 'POLYGON' })
-                            ]
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerPointText, name: 'geometry', inputValue: 'POINT', checked: true }),
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerLineText, name: 'geometry', inputValue: 'LINE' }),
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerPolygonText, name: 'geometry', inputValue: 'POLYGON' })
+                            ],
+                            fieldLabel: "Tipo de geometría"
                         }),
                         this.txtName = new Ext.form.TextField({
-                            fieldLabel: 'Nombre',
+                            fieldLabel: this.parentAction.tempLayerNameLabelText,
                             anchor: '95%'
                         })
                     ],
                     buttons: [
                         this.btnAdd = new Ext.Button({
-                            text: 'Crear',
+                            text: this.parentAction.tempLayerCreateButtonText,
                             listeners: {
                                 click: this.onAddButtonClicked,
                                 scope: this
                             }
                         }),
                         this.btnCancel = new Ext.Button({
-                            text: 'Cancelar',
+                            text: this.parentAction.tempLayerCancelButtonText,
                             listeners: {
                                 click: this.onCancelButtonClicked,
                                 scope: this
@@ -1019,7 +1039,10 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
             }
         });
 
-        var dialog = new Dialog({ mapPanel: this.target.mapPanel });
+        var dialog = new Dialog({ 
+            mapPanel: this.target.mapPanel,
+            parentAction: this
+        });
         dialog.show();
     }
 
