@@ -448,7 +448,7 @@ Viewer.widgets.SaveLayerPanel = Ext.extend(Ext.Container, {
                 app.persistenceGeoContext.saveLayerFromParams(params, this.onLayerSave, this.onSaveLayerException,this);
             } else {
                 throw new Error("Unsupported temporal layer for persistence.!")
-ç            }
+            }
         }
     },
 
