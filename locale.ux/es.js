@@ -1,9 +1,10 @@
 GeoExt.Lang.add(
     "es", {
 
+    /* A\u00f1adir capas */
     "gxp.plugins.AddLayers.prototype": {
         addActionMenuText: "A\u00F1adir Capas",
-        addActionTip: "A\u00F1adir Capas",
+        addActionTip: "Herramientas para importar capas de diferentes formatos",
         addServerText: "A\u00F1adir servidor",
         addButtonText: "A\u00F1adir Capas",
         untitledText: "Sin T\u00EDtulo",
@@ -15,6 +16,8 @@ GeoExt.Lang.add(
         doneText: "Hecho",
         uploadText: "Subir Datos"
     },
+
+
 
     "Viewer.plugins.AddLayers.prototype": {
         nameHeaderText: "Nombre",
@@ -45,9 +48,21 @@ GeoExt.Lang.add(
         onlyCompatibleText: "S\u00f3lo compatibles",
         makePersistentText: "\u00bfDesea hacerla persistente?",
         uploadKMLText: "Subir un KML",
-        uploadRasterText: "Subir un Raster",
-        uploadShapeText: "Subir archivo ZIP con SHP",
-        invalidWMSURLText: "Escriba una URL válida de un servidor WMS (p. ej. http://example.com/geoserver/wms)"
+        uploadRasterText: "Subir un Raster...",
+        uploadShapeText: "Subir archivo ZIP con SHP...",
+        invalidWMSURLText: "Escriba una URL válida de un servidor WMS (p. ej. http://example.com/geoserver/wms)",
+        addWMSLayerActionText: "Capas WMS...",
+        temporaryLayerActionText: "Capa Temporal...",
+        addWFSLayerActionText: "WFS...",
+        findActionMenuText: "Buscar capas...",
+        tempLayerWindowTitleText: 'Crear capa temporal',
+        tempLayerPointText: "Punto",
+        tempLayerLineText: "Línea",
+        tempLayerPolygonText: "Polígono",
+        tempLayerNameLabelText: "Nombre",
+        tempLayerCreateButtonText: "Crear",
+        tempLayerCancelButtonText: "Cancelar",
+        tempLayerDescriptionText: "Crea una capa temporal del tipo de geometría indicado."
     },
 
     "OpenLayers.Control.LoadLayerWizard.prototype": {
@@ -130,10 +145,7 @@ GeoExt.Lang.add(
 
     "Viewer.plugins.RasterUploadPanel.prototype": {
         windowTitleText: "Crear una nueva capa a partir de un fichero raster",
-        descriptionText: "Escriba el nombre para la nueva capa, seleccione o " + 
-            "escriba el sistema de referencia del r\u00e1ster y seleccione un archivo GeoTIFF " + 
-            "o un ZIP con un archivo imagen y un archivo world dentro del mismo." + 
-            " (png+pngw, jpg+jpgw, tif+tifw).",
+        descriptionText: "Escriba el nombre para la nueva capa, seleccione o " + "escriba el sistema de referencia del r\u00e1ster y seleccione un archivo GeoTIFF " + "o un ZIP con un archivo imagen y un archivo world dentro del mismo." + " (png+pngw, jpg+jpgw, tif+tifw).",
         fileTypeLabelText: "Formato de la imagen",
         fileTypeEmptyText: "Seleccione el formato de la imagen",
         buttonText: "Subir",
@@ -197,24 +209,6 @@ GeoExt.Lang.add(
         noFeaturesMessage: "Su consulta no produjo resultados."
     },
 
-    "GeoExplorer.Composer.prototype": {
-        mapText: "Mapa",
-        saveMapText: "Guardar map",
-        exportMapText: "Exportar map",
-        toolsTitle: "Cambiar herramientas de la barra de herramientas:",
-        previewText: "Vista previa",
-        backText: "Atr\u00e1s",
-        nextText: "Siguiente",
-        loginText: "Login",
-        logoutText: "Salir",
-        loginErrorText: "Contrase\u00f1a o nombre de usuario incorrecto.",
-        userFieldText: "Usuario",
-        passwordFieldText: "Contrase\u00f1a",
-        saveErrorText: "Error al salvar: ",
-        tableText: "Datos",
-        queryText: "Consultar"
-    },
-
     "Viewer.dialog.ChannelTools.prototype": {
         titleText: "Canales Tem\u00e1ticos",
         loadText: 'Cargar',
@@ -230,9 +224,7 @@ GeoExt.Lang.add(
     "gxp.plugins.ChannelToolsAction.prototype": {
         buttonText: 'Canales Tem\u00e1ticos',
         menuText: 'Canales Tem\u00e1ticos',
-        tooltip: "Muestra una ventana con una lista de canales " + 
-            "tem\u00e1ticos que cargan una serie de capas de una tem\u00e1tica " + 
-            "determinada en el \u00e1rbol de capas."
+        tooltip: "Muestra una ventana con una lista de canales " + "tem\u00e1ticos que cargan una serie de capas de una tem\u00e1tica " + "determinada en el \u00e1rbol de capas."
     },
 
     "gxp.plugins.AddTagToMap.prototype": {
@@ -297,34 +289,35 @@ GeoExt.Lang.add(
     },
     /* Paneo */
     "gxp.plugins.PanControlAction.prototype": {
-    	tooltip: 'Movimiento'
+        tooltip: 'Movimiento'
     },
     /* Barra de herramientas de informacion, edicion y exportar */
     "GeoExplorer.Composer.prototype": {
-    	/* Informaci\u00f3n */
+        /* Informaci\u00f3n */
         tooltipInfo: "Herramientas de informaci\u00f3n",
         /* Edici\u00f3n */
         tooltipEdition: "Herramientas de edici\u00f3n",
         /* Exportar */
         tooltipExport: "Herramientas de exportaci\u00f3n",
         /* Informaci\u00f3n de elementos */
-        tooltipGetFeatureInfo: "Herramienta de informaci\u00f3n de los elementos de una capa"
+        tooltipGetFeatureInfo: "Herramienta de informaci\u00f3n de los elementos de una capa",
+        mapText: "Mapa",
+        saveMapText: "Guardar map",
+        exportMapText: "Exportar map",
+        toolsTitle: "Cambiar herramientas de la barra de herramientas:",
+        previewText: "Vista previa",
+        backText: "Atr\u00e1s",
+        nextText: "Siguiente",
+        loginText: "Login",
+        logoutText: "Salir",
+        loginErrorText: "Contrase\u00f1a o nombre de usuario incorrecto.",
+        userFieldText: "Usuario",
+        passwordFieldText: "Contrase\u00f1a",
+        saveErrorText: "Error al salvar: ",
+        tableText: "Datos",
+        queryText: "Consultar"
     },
-    /* A\u00f1adir capas */
-    "gxp.plugins.AddLayers.prototype": {
-        addActionMenuText: "A\u00F1adir Capas",
-        addActionTip: "Herramientas para importar capas de diferentes formatos",
-        addServerText: "A\u00F1adir servidor",
-        addButtonText: "A\u00F1adir Capas",
-        untitledText: "Sin T\u00EDtulo",
-        addLayerSourceErrorText: "Error obteniendo capabilities de WMS ({msg}).\nPor favor, compruebe la URL y vuelva a intentarlo.",
-        availableLayersText: "Capas disponibles",
-        expanderTemplateText: "<p><b>Resumen:</b> {abstract}</p>",
-        panelTitleText: "T\u00EDtulo",
-        layerSelectionText: "Ver datos disponibles de:",
-        doneText: "Hecho",
-        uploadText: "Subir Datos"
-    },
+
     /* Certificados municipales */
     "gxp.plugins.LocalCertificatesAction.prototype": {
         selectInMapText: "Seleccionar en el mapa",
@@ -335,56 +328,56 @@ GeoExt.Lang.add(
         waitText: "Por favor espere...",
         tooltip: "Herramientas para emitir certificados municipales"
     },
-    
+
     /* Instrumentos de planificaci\u00f3n */
     "gxp.plugins.PlanificationToolsAction.prototype": {
-    	tooltip: "Instrumentos de planificaci\u00f3n territorial"
+        tooltip: "Instrumentos de planificaci\u00f3n territorial"
     },
     /* Iniciativas de inversi\u00f3n*/
     "Viewer.plugins.ChartWindowAction.prototype": {
-    	tooltip: "Abre la ventana que muestra las Iniciativas de Inversi\u00f3n"
+        tooltip: "Abre la ventana que muestra las Iniciativas de Inversi\u00f3n"
     },
     /* Log in/out */
     //TODO
-    
+
     /** Barra de herramientas de informaci\u00f3n **/
     "Viewer.widgets.InformationToolbar.prototype": {
-    	/* B\u00fasquedas predeterminadas */
-    	tooltipDefaultSearches: "Abre un cuadro de di\u00e1logo en el que se permiten realizar b\u00fasquedas predetermindas",
-    	/* Medir longitud */
-    	tooltipLengthMeasure: "Permite dibujar una l\u00ednea en el mapa, de la que se mostrar\u00e1 su longitud",
-    	/* Medir \u00e1rea */
-    	tooltipAreaMeasure: "Permite dibujar un pol\u00edgono en el mapa, del que se mostrr\u00e1 su \u00e1rea",
+        /* B\u00fasquedas predeterminadas */
+        tooltipDefaultSearches: "Abre un cuadro de di\u00e1logo en el que se permiten realizar b\u00fasquedas predetermindas",
+        /* Medir longitud */
+        tooltipLengthMeasure: "Permite dibujar una l\u00ednea en el mapa, de la que se mostrar\u00e1 su longitud",
+        /* Medir \u00e1rea */
+        tooltipAreaMeasure: "Permite dibujar un pol\u00edgono en el mapa, del que se mostrr\u00e1 su \u00e1rea",
         /* Consultar la capa seleccionada */
-    	tooltipQueryLayer: "Permite realizar una consulta sobre la capa seleccionada",
+        tooltipQueryLayer: "Permite realizar una consulta sobre la capa seleccionada",
         /* Consultar coordenadas */
-    	tooltipPointInformation: "Muestra informaci\u00f3n sobre las coordenadas seleccionadas",
+        tooltipPointInformation: "Muestra informaci\u00f3n sobre las coordenadas seleccionadas",
         /* Consultar metadatos */
-    	tooltipMetadataLayer: "Muestra informaci\u00f3n de los metadatos de la capa seleccionada."
-    },    
+        tooltipMetadataLayer: "Muestra informaci\u00f3n de los metadatos de la capa seleccionada."
+    },
     /** Barra de herramientas de edici\u00f3n **/
     "Viewer.widgets.EditionToolbar.prototype": {
-    	/* Selecci\u00f3n de elementos */
-    	tooltipSelectFeature: "Permite seleccionar un elemento en el mapa",
-    	/* A\u00f1adir etiqueta */
-    	tooltipAddTag: "Permite a\u00f1adir una etiqueta en el mapa",
-    	/* A\u00f1adir punto */
-    	tooltipAddPoint: "Permite a\u00f1adir un punto a una capa de puntos",
-    	/* A\u00f1adir l\u00ednea */
-    	tooltipAddLine: "Permite a\u00f1adir una l\u00ednea a una capa de l\u00edneas",
-    	/* A\u00f1adir pol\u00edgono */
-    	tooltipAddPolygon: "Permite a\u00f1adir un pol\u00edgono a una capa de pol\u00edgonos",
-    	/* Crear bufer */
-    	tooltipAddBuffer: "Permite crear un bufer sobre un elemente del mapa",
-    	/* Crear nuevo elemento */
-    	tooltipAddNewElement: "Permite crear un nuevo elemento sobre una capa",
+        /* Selecci\u00f3n de elementos */
+        tooltipSelectFeature: "Permite seleccionar un elemento en el mapa",
+        /* A\u00f1adir etiqueta */
+        tooltipAddTag: "Permite a\u00f1adir una etiqueta en el mapa",
+        /* A\u00f1adir punto */
+        tooltipAddPoint: "Permite a\u00f1adir un punto a una capa de puntos",
+        /* A\u00f1adir l\u00ednea */
+        tooltipAddLine: "Permite a\u00f1adir una l\u00ednea a una capa de l\u00edneas",
+        /* A\u00f1adir pol\u00edgono */
+        tooltipAddPolygon: "Permite a\u00f1adir un pol\u00edgono a una capa de pol\u00edgonos",
+        /* Crear bufer */
+        tooltipAddBuffer: "Permite crear un bufer sobre un elemente del mapa",
+        /* Crear nuevo elemento */
+        tooltipAddNewElement: "Permite crear un nuevo elemento sobre una capa"
     },
     /** Barra de herramientas de exportaci\u00f3n **/
     "Viewer.widgets.ImportExportToolbar.prototype": {
-    	/* Exportar KML */
-    	tooltipExportKML: "Permite exportar una capa a formato KML",
-    	/* Exportar SHP */
-    	tooltipExportSHP: "Permite exportar una capa a formato SHP"
+        /* Exportar KML */
+        tooltipExportKML: "Permite exportar una capa a formato KML",
+        /* Exportar SHP */
+        tooltipExportSHP: "Permite exportar una capa a formato SHP"
     },
 
     "Viewer.dialog.PDFPrintWindow.prototype": {
@@ -407,15 +400,6 @@ GeoExt.Lang.add(
         errorText: "Ocurri\u00f3 un error, vuelva a intentarlo en unos instantes."
     },
 
-    "gxp.plugins.LocalCertificatesAction.prototype": {
-        selectInMapText: "Seleccionar en el mapa",
-        searchFormText: "Formulario de b\u00fasqueda...",
-        selectPropertyInMapText: "Por favor, seleccione una propiedad en el mapa.",
-        noParcelSelectedText: "No se seleccion\u00f3 ninguna parcela, por favor pulse 'Seleccionar en mapa' de nuevo.",
-        errorText: "Ocurri\u00f3 un error, vuelva a intentarlo en unos instantes.",
-        waitText: "Por favor espere..."
-    },
-
     "Viewer.dialog.LocalCertificatesWindow.prototype": {
         titleText: "Certificados Municipales",
         printText: "Imprimir",
@@ -431,24 +415,6 @@ GeoExt.Lang.add(
         selectInMapText: "Seleccionar en el mapa"
     },
 
-    "gxp.plugins.ZoomToInitialValues.prototype": {
-        tooltip: 'Vista inicial'
-    },
-
-    "gxp.plugins.Zoom.prototype": {
-        zoomInMenuText: "Zoom m\u00e1s",
-        zoomOutMenuText: "Zoom menos",
-        zoomInTooltip: "Zoom m\u00e1s",
-        zoomOutTooltip: "Zoom menos"
-    },
-
-    "gxp.plugins.NavigationHistory.prototype": {
-        previousMenuText: 'Vista anterior',
-        nextMenuText: 'Vista siguiente',
-        previousTooltip: 'Vista anterior',
-        nextTooltip: 'Vista siguiente'
-    },
-
     "gxp.plugins.WMSGetFeatureInfo.prototype": {
         infoActionTip: 'Informaci\u00f3n del elemento',
         popupTitle: 'Informaci\u00f3n del elemento',
@@ -456,7 +422,7 @@ GeoExt.Lang.add(
     },
 
 
-    "Viewer.PointSymbolizerMod.prototype":{
+    "Viewer.PointSymbolizerMod.prototype": {
         uploadFileEmptyText: 'Selecciona un icono...',
         uploadFileLabel: 'Icono',
         waitMsgText: 'Espere...'
@@ -477,17 +443,17 @@ GeoExt.Lang.add(
     },
     "Ext.form.TextField.prototype": {
         blankText: "Este campo no puede estar vac\u00edo",
-        minLengthText : 'La longitud m\u00ednima de este campo es {0}',    
-        maxLengthText : 'La longitud m\u00e1xima de este campo es {0}'
+        minLengthText: 'La longitud m\u00ednima de este campo es {0}',
+        maxLengthText: 'La longitud m\u00e1xima de este campo es {0}'
 
     },
 
-    "PersistenceGeo.Parser.prototype" :{
+    "PersistenceGeo.Parser.prototype": {
         loadingText: "Por favor, espere..."
     },
     "Viewer.dialog.DefaultSearches.prototype": {
-        titleTool: "Búsquedas Predeterminadas",
-        
-    } 
+        titleTool: "Búsquedas Predeterminadas"
+
+    }
 
 });
