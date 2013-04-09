@@ -979,19 +979,48 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
             onAddButtonClicked: function(button, evt) {
                 var geometry = this.radioGroup.getValue().getGroupValue();
                 var name = this.txtName.getValue();
+                
+                
+                
                 if (name.length > 0) {
-                    var layerController = Viewer.getController('Layers');
-                    var newLayer = layerController.create({
-                        type: 'Vector',
-                        name: name,
-                        options: {
-                            metadata: {
-                                geometries: [geometry]
-                            }
-                        }
-                    });
-                    this.mapPanel.map.addLayer(newLayer);
-                    this.close();
+                    this.getComponent('formNewLayer').getForm().submit({   
+                                scope: this,
+                                url: '../../vectorialLayerController/newTempLayer',
+                                waitMsg: this.createLayerWaitMsgText,
+                                waitTitle: this.createLayerWaitMsgTitleText,
+                                success: function(fp, o) {
+                                    var resp = Ext.util.JSON.decode(o.response.responseText);
+                                    if (resp && resp.success && resp.data && resp.data.status === "success") {
+                                        //Add layer to map and close window
+                                        var layerName = resp.data.layerName;
+                                        var layerTitle = resp.data.layerTitle;
+                                        var geoserverUrl = (resp.data.serverUrl) || (app.sources.local.url + "/wms");
+                                        var layer = new OpenLayers.Layer.WMS(layerTitle,
+                                                geoserverUrl,
+                                            {
+                                                layers: layerName,
+                                                transparent: true                         
+                                            }, {
+                                                opacity: 1,
+                                                visibility: true                                                
+                                            });
+                                        layer.metadata.layerResourceId = resp.data.layerResourceId;
+                                        layer.metadata.layerTypeId = resp.data.layerTypeId;
+                                        layer.metadata.temporal = true;
+                                        Viewer.getMapPanel().map.addLayer(layer);
+                                        this.close();
+                                        Ext.Msg.alert('Capa creada', "La capa se ha creado de forma temporal");
+                                    } else if(resp && resp.success && resp.data && resp.data.status === "error") {
+                                        Ext.Msg.alert('Error', resp.data.message);
+                                    } else {
+                                        Ext.Msg.alert('Error', "Se ha producido un error creando la capa.");
+                                    }
+                                },
+                                failure: function(form, action) {
+                                    Ext.Msg.alert('Error', "Se ha producido un error al enviar los datos al servidor");
+                                }
+                            });
+               
                 }
             },
 
@@ -999,6 +1028,7 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                 this.add({
                     xtype: 'form',
                     layout: 'form',
+                    itemId: 'formNewLayer',
                     padding: 10,
                     items: [
                         {
@@ -1008,14 +1038,16 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                         },
                         this.radioGroup = new Ext.form.RadioGroup({
                             items: [
-                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerPointText, name: 'geometry', inputValue: 'POINT', checked: true }),
-                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerLineText, name: 'geometry', inputValue: 'LINE' }),
-                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerPolygonText, name: 'geometry', inputValue: 'POLYGON' })
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerPointText, name: 'geometryType', inputValue: 'POINT', checked: true}),
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerLineText, name: 'geometryType', inputValue: 'LINESTRING' }),
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerPolygonText, name: 'geometryType', inputValue: 'POLYGON' })
                             ],
-                            fieldLabel: "Tipo de geometría"
+                            fieldLabel: "Tipo de geometría",
+                            
                         }),
                         this.txtName = new Ext.form.TextField({
                             fieldLabel: this.parentAction.tempLayerNameLabelText,
+                            name: 'layerName',
                             anchor: '95%'
                         })
                     ],
