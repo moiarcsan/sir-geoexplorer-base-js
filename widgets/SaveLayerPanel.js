@@ -136,7 +136,7 @@ Viewer.widgets.SaveLayerPanel = Ext.extend(Ext.Container, {
             // labelWidth : 100,
             // width : 500,
             frame : true,
-            autoHeight : true,
+            height: 115,
             bodyStyle : 'padding: 10px 10px 0 10px;',
             defaultType : 'textfield',
             defaults : {
@@ -424,24 +424,31 @@ Viewer.widgets.SaveLayerPanel = Ext.extend(Ext.Container, {
      */
     submitForm : function() {
 
+        if(!this.items.items[0].form.isValid()){
+            return;
+        }
+
         // Mark as saved
         this.markIsSaved = true;
         
         // Get the layer params to save them
         var params = this.getParamsToSubmit();
         
-        // init context and save layer
-        var pgeoContext = this.target.persistenceGeoContext;
-
-        pgeoContext.onLayerSave = this.onLayerSave;
-        pgeoContext.onSaveLayerException = this.onSaveLayerException;
-        pgeoContext.scope = this;
-
         if(!!this.layerRecord
             && !! this.layerRecord.getLayer()){
-            pgeoContext.addLayer(this.layerRecord.getLayer(), this.layerName, null, params);
-        }else{
-            pgeoContext.saveLayerFromParams(params);
+             var layer = this.layerRecord.getLayer();
+
+            if(layer.metadata && layer.metadata.layerResourceId) {
+                // Temporal layers saved in the server.
+                  app.persistenceGeoContext.saveLayerResource(
+
+                   layer.metadata.layerResourceId, params, this.onLayerSave, this.onSaveLayerException,this);   
+            } else if(params.type=="WFS" || params.type=="WMS") {
+                // Remote temporal layers.
+                app.persistenceGeoContext.saveLayerFromParams(params, this.onLayerSave, this.onSaveLayerException,this);
+            } else {
+                throw new Error("Unsupported temporal layer for persistence.!")
+            }
         }
     },
 
@@ -451,51 +458,49 @@ Viewer.widgets.SaveLayerPanel = Ext.extend(Ext.Container, {
      **/
     updateLayer: function (layer){
         var layerToRemove = this.layerRecord.getLayer();
-        if(this.target.mapPanel.map.getLayersByName(layerToRemove.name).length ==  1){
-          layerToRemove = this.target.mapPanel.map.getLayersByName(layerToRemove.name)[0];
-          this.target.mapPanel.map.removeLayer(layerToRemove);
-        }else{
-            var layersCanBeRemoved = this.target.mapPanel.map.getLayersByName(layerToRemove.name);
-            for (var i = 0; i< layersCanBeRemoved.length; i++){
-                if(!!layersCanBeRemoved[i].temporal){
-                    this.target.mapPanel.map.removeLayer(layersCanBeRemoved[i]);
-                }
-            }
-        }
+        this.target.mapPanel.map.removeLayer(layerToRemove);
         this.target.mapPanel.map.addLayer(layer);
     },
 
-    onLayerSave: function (layer){
-        if(!!this.scope.layerRecord
-            && !!this.scope.layerRecord.getLayer()){
-            this.scope.layerRecord.getLayer().name = layer.name;
-        }
+    onLayerSave: function (layer){    
 
-        if(this.scope.authorized){
-            this.scope.updateLayer(layer);
-            Ext.Msg.alert(this.scope.saveLayerTitleText, String.format(this.scope.saveLayerText, layer.name));
-        }
-
-        if(this.scope.layerType
-            == this.scope.KNOWN_TYPES.KML){
-            this.scope.layer = layer;
-            this.scope.target.mapPanel.map.addLayer(layer);
+        this.updateLayer(layer);
+        Ext.Msg.alert(this.saveLayerTitleText, String.format(this.saveLayerText, layer.name));
+ 
+        if(this.layerType
+            == this.KNOWN_TYPES.KML){
+            this.layer = layer;
+            this.target.mapPanel.map.addLayer(layer);
 
             // restore savemode
-            if(this.scope.authorized){
-                this.scope.target.persistenceGeoContext.saveModeActive = this.scope.target.persistenceGeoContext.SAVE_MODES.GROUP;
+            if(this.authorized){
+                this.target.persistenceGeoContext.saveModeActive = this.target.persistenceGeoContext.SAVE_MODES.GROUP;
             }
         
-            layer.events.register("loadend", this.scope, this.scope.onLoadEnd);
+            layer.events.register("loadend", this, this.onLoadEnd);
         }
 
-        this.scope.hide();
+        this.hide();
     },
 
-    onSaveLayerException: function (e){
-        Ext.Msg.alert(this.scope.saveLayerErrorTitleText, String.format(this.scope.saveLayerErrorText, this.scope.layerName));
+    onSaveLayerException: function (responseText){
 
-        this.scope.hide();
+        var errorResponse = null;
+
+        try {
+            errorResponse = Ext.decode(responseText);    
+        } catch(e) {
+
+        }
+        
+
+        if(errorResponse && errorResponse.data && errorResponse.data.error) {
+            Ext.Msg.alert(this.saveLayerErrorTitleText, errorResponse.data.error);
+        } else{
+            Ext.Msg.alert(this.saveLayerErrorTitleText, String.format(this.saveLayerErrorText, this.layerName));
+        }
+
+        this.hide();
 
         //TODO: handle exception
         if(!!e

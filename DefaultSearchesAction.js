@@ -65,7 +65,7 @@ gxp.plugins.DefaultSearchesAction = Ext.extend(gxp.plugins.Tool, {
      *  ``String``
      *  Text for zoom action tooltip (i18n).
      */
-    tooltip: 'Búsquedas predeterminadas',
+    tooltip: 'Default Searches',
     
     /** private: property[iconCls]
      */
@@ -100,7 +100,8 @@ gxp.plugins.DefaultSearchesAction = Ext.extend(gxp.plugins.Tool, {
                     var mapPanel = Viewer.getMapPanel();
                     ds = new Viewer.dialog.DefaultSearches({
                         mapPanel: mapPanel,
-                        map: mapPanel.map
+                        map: mapPanel.map,
+                        persistenceGeoContext: app.persistenceGeoContext.defaultRestUrl
                     });
                     Viewer.registerComponent('DefaultSearches', ds);
                 }

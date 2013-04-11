@@ -50,6 +50,10 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
 	REST_COMPONENT_URL: "rest",
 	REQUEST_METHOD_POST: "POST",
 	REQUEST_METHOD_GET: "GET",
+
+
+
+    loadingText: "Loading, please wait...",
 	
 	LOADERS:{
 		"WMS":1,
@@ -95,6 +99,21 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
         	restBaseUrl: this.getRestBaseUrl(),
         	map: this.map
         });
+        
+        this.LOADERS_CLASSES["geotiff"] = new PersistenceGeo.loaders.WMSLoader({
+        	restBaseUrl: this.getRestBaseUrl(),
+        	map: this.map
+        });
+        
+        this.LOADERS_CLASSES["imagewold"] = new PersistenceGeo.loaders.WMSLoader({
+        	restBaseUrl: this.getRestBaseUrl(),
+        	map: this.map
+        });
+        
+        this.LOADERS_CLASSES["imagemosaic"] = new PersistenceGeo.loaders.WMSLoader({
+        	restBaseUrl: this.getRestBaseUrl(),
+        	map: this.map
+        });
 
         PersistenceGeo.Parser.superclass.initComponent.call(this);
     },
@@ -111,7 +130,10 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
 	SAVE_LAYER_GROUP_BASE_URL: function (){
 		return this.getRestBaseUrl() + "/persistenceGeo/saveLayerByGroup/";
 	},
-						
+
+	SAVE_LAYER_RESOURCE_GROUP_BASE_URL : function() {
+		return this.getRestBaseUrl() + "/persistenceGeo/saveLayerResourceByGroup/";
+	},						
 	SAVE_LAYER_BASE_URL: function (){
 		return this.getRestBaseUrl() + "/persistenceGeo/saveLayerByUser/";
 	},
@@ -192,6 +214,14 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
 
     LOAD_FOLDER_BY_ID_BASE_URL: function(){
 		return this.getRestBaseUrl() + "/persistenceGeo/loadFoldersById/";
+	},
+	
+	LOAD_PUBLIC_LAYERS_URL : function() {
+		return this.getRestBaseUrl() + "/persistenceGeo/loadPublicLayers/";
+	},
+	
+	LOAD_PENDING_LAYER_REQUESTS_URL : function () {
+		return this.getRestBaseUrl() + "/persistenceGeo/loadPendingLayerRequestsLayers/";
 	},
 	
 	getFolder: function (nameFolder){
@@ -500,6 +530,32 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
 	},
 	
 	/**
+	 * Function: loadPublicLayers
+	 * 
+	 * Loads OpenLayers layers and call to onload callback function (layers). 
+	 * Used to load all publicized layers. Call to onloadcallback with an array of ``OpenLayers.Layer`` result.
+	 * @param user name of user
+	 * @param onload callback
+	 * @loadFolders true if must load folders. Default true. 
+	 */
+	loadPublicLayers : function(user, onload) {
+		this.loadLayers(user, onload,this.LOAD_PUBLIC_LAYERS_URL()+user);
+	},
+	
+	/**
+	 * Function: loadPublicLayers
+	 * 
+	 * Loads OpenLayers layers and call to onload callback function (layers). 
+	 * Used to load all pending publication requests layers. Call to onloadcallback with an array of ``OpenLayers.Layer`` result.
+	 * @param user name
+	 * @param onload callback
+	 * @loadFolders true if must load folders. Default true. 
+	 */
+	loadPendingLayerRequests : function(user, onload) {
+		this.loadLayers(user, onload,this.LOAD_PENDING_LAYER_REQUESTS_URL()+user);
+	},
+	
+	/**
 	 * Function: loadLayers
 	 * 
 	 * Loads OpenLayers layers and call to onload callback function (layers). 
@@ -519,7 +575,7 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
                       'user','folderList','styles',
                       'createDate','server_resource',
                       'publicized','enabled','updateDate', 
-                      'folderId', 'authId', 'userId'],
+                      'folderId', 'authId', 'userId',"layerTitle"],
              listeners: {
                  load: function(store, records, options) {
                 	 if(!!onload){
@@ -771,6 +827,16 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
 	},
 	
 	/**
+	 * Method: saveLayerResourceByGroup
+	 * 
+	 * Saves a temporal layer by its layerResource id for a group and call to callbacks functions
+	 */
+	saveLayerResourceByGroup : function(groupId, resourceId, params, onsuccess, onfailure)	 {
+		var url = this.SAVE_LAYER_RESOURCE_GROUP_BASE_URL() + groupId+"/"+resourceId;
+		this.sendFormPostData(url, params, this.REQUEST_METHOD_POST, onsuccess, onfailure);
+	},
+
+	/**
 	 * Method: deleteLayerByLayerId
 	 * 
 	 * Delete a layer for a layer identifier and call to callbacks functions
@@ -852,7 +918,7 @@ PersistenceGeo.Parser = Ext.extend(Ext.Component,{
 		tempForm.getForm().load({
 			url: url,
 			headers: {Accept: 'application/json, text/javascript, */*; q=0.01'},
-			waitMsg: 'loading...',
+			waitMsg: this.loadingText,
 			params : params,
 	        fileUpload: true,
 			success: onsuccess ? onsuccess : function(){},

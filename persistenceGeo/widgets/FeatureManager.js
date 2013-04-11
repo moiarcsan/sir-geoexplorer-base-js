@@ -140,9 +140,9 @@ PersistenceGeo.widgets.FeatureManager = Ext.extend(gxp.plugins.FeatureManager, {
             request: "DescribeFeatureType",
             typeName: typeName
         };
-        if(url.indexOf("?") > 0){
+        /*if(url.indexOf("?") > 0){
             urlRet = url.split("?")[0];
-        }
+        }*/
         // if(url.indexOf("service") == -1
         //     && url.indexOf("SERVICE") == -1){
         //     baseParams["SERVICE"] = "WFS";

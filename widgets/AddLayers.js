@@ -56,6 +56,7 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
     
 
     /** i18n **/
+    addButtonText: "Add Layers",
     previewLayerText: "Preview of '{0}' layer",
     panelSRSText: "SRS",
     onlyCompatibleText: "Only compatibles",
@@ -63,6 +64,19 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
     uploadKMLText: "Upload a KML",
     uploadRasterText: "Upload a Raster",
     uploadShapeText: "Upload a SHP in a ZIP file",
+    invalidWMSURLText: "Enter a valid URL to a WMS endpoint (e.g. http://example.com/geoserver/wms)",
+      addWMSLayerActionText: "Add WMS layer...",
+    temporaryLayerActionText: "Temporary layer...",
+    addWFSLayerActionText: "WFS...",
+    findActionMenuText: "Find Layers...",
+    tempLayerWindowTitleText: "Create Temporary Layer",
+    tempLayerPointText: "Point",
+    tempLayerLineText: "Line",
+    tempLayerPolygonText: "Polygon",
+    tempLayerNameLabelText: "Name",
+    tempLayerCreateButtonText: "Create",
+    tempLayerCancelButtonText: "Cancel",
+    tempLayerDescriptionText: "Create a temporary layer of selected geometry type",
     
     uploadShpWindow: null,
 
@@ -80,6 +94,9 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
 
     /** Default prewiev window height **/
     previewHeight: 256,
+
+    /**  If when adding layers the make persist window will be shown **/
+    showPersistWindowOnAdd :false,
     
     /** api: method[addActions]
      */
@@ -94,21 +111,24 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
         var options, uploadButton, uploadKMLButton, uploadRasterButton;
         if (this.initialConfig.search || (this.uploadSource)) {
             var items = [new Ext.menu.Item({
-                iconCls: 'vw-icon-add-layer-wms', 
-                text: this.addActionMenuText, 
+                iconCls: 'vw-icon-add-layer-wms',
+                tooltip: "Add WMS Layer",
+                text: this.addWMSLayerActionText,
                 handler: this.showCapabilitiesGrid,
                 scope: this
             })];
 
             items.push(new Ext.menu.Item({
                 iconCls: 'vw-icon-add-layer-wfs', 
-                text: "WFS",
+                text: this.addWFSLayerActionText,
+                tooltip: "Add WFS Feature Type",
                 handler: this.showCatalogueWFSSearch,
                 scope: this
             }));
             items.push(new Ext.menu.Item({
                 iconCls: 'vw-icon-add-layer-vector', 
-                text: "Capa temporal",
+                text: this.temporaryLayerActionText,
+                tooltip: "Add temporary layer",
                 handler: this.createTemporaryLayer,
                 scope: this
             }));
@@ -458,8 +478,8 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
      */
     addLayers: function(records, isUpload) {
 
-        if(records.length == 1
-            && records[0].getLayer() instanceof OpenLayers.Layer.Vector){
+        if(records.length == 1 && 
+            records[0].getLayer() instanceof OpenLayers.Layer.Vector){
             this.target.mapPanel.map.addLayer(records[0].getLayer());
             this.layer = records[0].getLayer();
             records[0].getLayer().events.register("loadend", this, this.onLoadEnd);
@@ -481,7 +501,7 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                         extent.extend(record.getLayer().maxExtent);
                     }
                 }
-                if(this.target.isAuthorized()){
+                if(this.showPersistWindowOnAdd && this.target.isAuthorized()){
                     //  mark temp
                     layer.temporal = true;
                     this.showSaveLayerWindow(records[i]);
@@ -684,6 +704,7 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
         var newSourceDialog = {
             xtype: "gxp_newsourcedialog",
             header: false,
+            invalidURLText: this.invalidWMSURLText,
             listeners: {
                 "hide": function(cmp) {
                     if (!this.outputTarget) {
@@ -914,12 +935,11 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                     attribution: layer.attribution,
                     maxExtent: OpenLayers.Bounds.fromArray(
                         record.get("llbbox")
-                    )
+                    ),
 //                    .transform(
 //                        new OpenLayers.Projection(Viewer.GEO_PROJECTION),
 //                        this.mapPanel.map.getProjectionObject()
 //                    )
-                    ,
                     isBaseLayer: false //Default overlay
                 }
             );
@@ -942,13 +962,14 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
     createTemporaryLayer: function() {
 
         var Dialog = Ext.extend(Ext.Window, {
+            parentAction: null,
 
             constructor: function(config) {
 
                 Dialog.superclass.constructor.call(this, Ext.apply({
-                    title: 'Crear capa temporal',
+                    title: config.parentAction.tempLayerWindowTitleText,
                     width: 400,
-                    height: 160,
+                    height: 200,
                     layout: 'fit'
                 }, config));
 
@@ -966,18 +987,43 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                 var geometry = this.radioGroup.getValue().getGroupValue();
                 var name = this.txtName.getValue();
                 if (name.length > 0) {
-                    var layerController = Viewer.getController('Layers');
-                    var newLayer = layerController.create({
-                        type: 'Vector',
-                        name: name,
-                        options: {
-                            metadata: {
-                                geometries: [geometry]
+                    this.getComponent('formNewLayer').getForm().submit({   
+                                scope: this,
+                                url: '../../vectorialLayerController/newTempLayer',
+                                waitMsg: this.createLayerWaitMsgText,
+                                waitTitle: this.createLayerWaitMsgTitleText,
+                                success: function(fp, o) {
+                                    var resp = Ext.util.JSON.decode(o.response.responseText);
+                                    if (resp && resp.success && resp.data && resp.data.status === "success") {
+                                        //Add layer to map and close window
+                                        var layerName = resp.data.layerName;
+                                        var layerTitle = resp.data.layerTitle;
+                                        var geoserverUrl = (resp.data.serverUrl) || (app.sources.local.url + "/wms");
+                                        var layer = new OpenLayers.Layer.WMS(layerTitle,
+                                                geoserverUrl,
+                                            {
+                                                layers: layerName,
+                                                transparent: true                         
+                                            }, {
+                                                opacity: 1,
+                                                visibility: true                                                
+                                            });
+                                        layer.metadata.layerResourceId = resp.data.layerResourceId;
+                                        layer.metadata.layerTypeId = resp.data.layerTypeId;
+                                        layer.metadata.temporal = true;
+                                        Viewer.getMapPanel().map.addLayer(layer);
+                                        this.close();
+                                        Ext.Msg.alert('Capa creada', "La capa se ha creado de forma temporal");
+                                    } else if(resp && resp.success && resp.data && resp.data.status === "error") {
+                                        Ext.Msg.alert('Error', resp.data.message);
+                                    } else {
+                                        Ext.Msg.alert('Error', "Se ha producido un error creando la capa.");
                             }
+                                },
+                                failure: function(form, action) {
+                                    Ext.Msg.alert('Error', "Se ha producido un error al enviar los datos al servidor");
                         }
                     });
-                    this.mapPanel.map.addLayer(newLayer);
-                    this.close();
                 }
             },
 
@@ -985,29 +1031,38 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
                 this.add({
                     xtype: 'form',
                     layout: 'form',
+                    itemId: 'formNewLayer',
+                    padding: 10,
                     items: [
+                        {
+                            xtype: 'label',
+                            cls: 'toolDescription',
+                            text: this.parentAction.tempLayerDescriptionText
+                        },
                         this.radioGroup = new Ext.form.RadioGroup({
                             items: [
-                                new Ext.form.Radio({ boxLabel: 'Punto', name: 'geometry', inputValue: 'POINT', checked: true }),
-                                new Ext.form.Radio({ boxLabel: 'Línea', name: 'geometry', inputValue: 'LINE' }),
-                                new Ext.form.Radio({ boxLabel: 'Polígono', name: 'geometry', inputValue: 'POLYGON' })
-                            ]
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerPointText, name: 'geometryType', inputValue: 'POINT', checked: true}),
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerLineText, name: 'geometryType', inputValue: 'LINESTRING' }),
+                                new Ext.form.Radio({ boxLabel: this.parentAction.tempLayerPolygonText, name: 'geometryType', inputValue: 'POLYGON' })
+                            ],
+                            fieldLabel: "Tipo de geometría",
                         }),
                         this.txtName = new Ext.form.TextField({
-                            fieldLabel: 'Nombre',
+                            fieldLabel: this.parentAction.tempLayerNameLabelText,
+                            name: 'layerName',
                             anchor: '95%'
                         })
                     ],
                     buttons: [
                         this.btnAdd = new Ext.Button({
-                            text: 'Crear',
+                            text: this.parentAction.tempLayerCreateButtonText,
                             listeners: {
                                 click: this.onAddButtonClicked,
                                 scope: this
                             }
                         }),
                         this.btnCancel = new Ext.Button({
-                            text: 'Cancelar',
+                            text: this.parentAction.tempLayerCancelButtonText,
                             listeners: {
                                 click: this.onCancelButtonClicked,
                                 scope: this
@@ -1018,7 +1073,10 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
             }
         });
 
-        var dialog = new Dialog({ mapPanel: this.target.mapPanel });
+        var dialog = new Dialog({ 
+            mapPanel: this.target.mapPanel,
+            parentAction: this
+        });
         dialog.show();
     }
 

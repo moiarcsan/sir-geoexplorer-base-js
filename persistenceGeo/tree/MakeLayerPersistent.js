@@ -46,7 +46,7 @@ PersistenceGeo.tree.MakeLayerPersistent = Ext.extend(gxp.plugins.Tool, {
             handler: function() {
                 var record = selectedLayer;
                 if(record) {
-                    if(this.target.isAuthorized() 
+                    if(app.persistenceGeoContext.userInfo
                         && !record.getLayer().layerID){
                         this.showSaveLayerWindow(record)
                     }
@@ -54,18 +54,22 @@ PersistenceGeo.tree.MakeLayerPersistent = Ext.extend(gxp.plugins.Tool, {
             },
             scope: this
         }]);
-        var removeLayerAction = actions[0];
+        var makePersistentAction = actions[0];
 
         this.target.on("layerselectionchange", function(record) {
             selectedLayer = record;
-            removeLayerAction.setDisabled(
-                this.target.isAuthorized() 
-                    &&  !!record 
-                    &&  record.getLayer().layerID
-            );
+            var persistibleLayer = false;
+            if(record) {
+                var layer = record.getLayer();
+                persistibleLayer = typeof(layer.layerID)=="undefined" && layer.metadata.removable && !layer.metadata.labelLayer;
+            }
+            
+            var userInfo = app.persistenceGeoContext.userInfo;
+            // We cant persist already persisted layers.
+            makePersistentAction.setDisabled(!userInfo || !userInfo.username || userInfo.admin || !persistibleLayer);
         }, this);
         var enforceOne = function(store) {
-            removeLayerAction.setDisabled(
+            makePersistentAction.setDisabled(
                 !selectedLayer || store.getCount() <= 1
             );
         };
@@ -87,11 +91,12 @@ PersistenceGeo.tree.MakeLayerPersistent = Ext.extend(gxp.plugins.Tool, {
         var saveWindow = new Ext.Window({
             title: this.makePersistentText,
             closeAction: 'hide',
-            width:500
+            width:500,
+            height: 150
         });
         var savePanel = new Viewer.widgets.SaveLayerPanel({
             layerRecord: layerRecord,
-            authorized: this.target.isAuthorized(),
+            authorized: app.persistenceGeoContext.userInfo && app.persistenceGeoContext.userInfo.username,
             target: this.target,
             saveWindow: saveWindow,
             outputTarget: false

@@ -52,6 +52,8 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
     defaultAuthGroup: "'{0}' authority layers",
     defaultUsersGroup: "'{0}' users layers",
     channelGroupText: "Channel '{0}' layers",
+    publicLayersGroupText:"Public layers",
+    publishRequestsGroupText: "Publication request",
 
     SAVE_MODES: {
         GROUP: 1,
@@ -89,6 +91,7 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
             // When added, the layers should be visible by default
             layer.setVisibility(true);
             this.map.addLayer(layer);
+            return layer;
         }
     },
 
@@ -105,6 +108,9 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
     constructor: function (config) {
 
         Ext.apply(this, config);
+        
+        // The count of user layer groups loadded.
+        this._groupIndexes =100;
 
         PersistenceGeo.Context.superclass.constructor.call(this, config);
 
@@ -137,9 +143,28 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         var this_ = this;
         this.clearLayers();
         if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
-            this.parser.loadLayersByGroup(this.authUser, function (layers, layerTree) {
-                this_.onLoadLayers(layers, layerTree);
-            }, false);
+            if (this.authUser && this.userInfo.admin) {
+                // The user admin views public and pending layers.
+            	this.parser.loadPendingLayerRequests(this.authUser,function(layers, layerTree){
+	        		this_.onLoadLayers(layers, layerTree, {
+                        groupName: this_.publishRequestsGroupText,
+                        removable: false
+                    });
+	        	});
+	            	
+            	this.parser.loadPublicLayers(this.authUser, function(layers, layerTree){
+            		this_.onLoadLayers(layers, layerTree, {
+                        groupName: this_.publicLayersGroupText, 
+                        visible: false
+                    });
+            	});
+            	
+
+            } else if(this.authUser){
+            	this.parser.loadLayersByGroup(this.authUser, function (layers, layerTree) {
+                    this_.onLoadLayers(layers, layerTree);
+                }, false);
+            }
         } else if (!!this.SAVE_MODES.USER == this.saveModeActive) {
             this.parser.loadLayersByUser(this.userLogin, function (layers, layerTree) {
                 this_.onLoadLayers(layers, layerTree);
@@ -179,8 +204,12 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         if(Ext.isArray(filters)) {
             filters = filters.join(",");
         }
+        var normalizedIdChannel = idChannel;
+        if (idChannel > 10000000 ) {
+            normalizedIdChannel = normalizedIdChannel - 10000000;
+        }
 
-        this.parser.loadFolderById(idChannel, filters,
+        this.parser.loadFolderById(normalizedIdChannel, filters,
 
         function (form, action) {
             /*
@@ -212,7 +241,11 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
      * Load all folders of a channel or channel layers not marked as channel.
      */
     getChannelData: function (idChannel, onLoadLayers, onFailure) {
-        this.parser.loadFolderById(idChannel, false,
+        var normalizedIdChannel = idChannel;
+        if (idChannel > 10000000 ) {
+            normalizedIdChannel = normalizedIdChannel - 10000000;
+        }
+        this.parser.loadFolderById(normalizedIdChannel, false,
 
         function (form, action) {
             /*
@@ -287,32 +320,58 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         }
     },
 
-    onLoadLayers: function(layers, layerTree) {
+    onLoadLayers: function(layers, layerTree, options) {
         var groupLayers = null;
-        if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
-            groupLayers = String.format(this.defaultAuthGroup, this.userInfo.authority);
-        } else if (!!this.SAVE_MODES.USER == this.saveModeActive) {
-            groupLayers = String.format(this.defaultUsersGroup, this.userLogin);
+        
+        var layersOptions = {};
+
+        if(typeof(options)!="undefined") {
+            layersOptions = options;
         }
-        this.loadedLayers[this.authUser] = [];
+        
+        if(typeof(layersOptions.groupName)!="undefined") {
+        	groupLayers = layersOptions.groupName;
+        } else {
+        	 if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
+                 groupLayers = String.format(this.defaultAuthGroup, this.userInfo.authority);
+             } else if (!!this.SAVE_MODES.USER == this.saveModeActive) {
+                 groupLayers = String.format(this.defaultUsersGroup, this.userLogin);
+             }
+        }        
+        
+        var visible = true;
+        if(typeof(layersOptions.visible)!="undefined") {
+        	visible = layersOptions.visible;
+        }
+
+        var removable = true;
+        if(typeof(layersOptions.removable)!="undefined") {
+            removable =layersOptions.removable;
+        }
+       
+        this.loadedLayers[this._groupIndexes] = [];
+       
         this.treeManager.addGroup({
             group: groupLayers,
-            groupIndex: this.authUser
+            groupIndex: this._groupIndexes
         });
         if (!!layers) {
             for (var i = 0; i < layers.length; i++) {
                 try {
                     var layer = layers[i];
-                    layer.groupLayers = this.authUser;
+                    layer.groupLayers = this._groupIndexes;
                     //Layers must be visible by default
-                    layer.setVisibility(true);
+                    layer.setVisibility(visible);
                     this.map.addLayer(layer);
-                    this.loadedLayers[this.authUser].push(layer);
+                    layer.metadata.removable = removable;
+                    this.loadedLayers[this._groupIndexes].push(layer);
                 } catch (e) {
                     // TODO: handle
                 }
             }
         }
+
+         this._groupIndexes++;
     },
 
     addLayer: function (layer, nameLayer, folderID, params) {
@@ -369,29 +428,77 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         this.saveLayerFromParams(params);
     },
 
-    getParser: function() {
-        return this.parser;
-    },
+    saveLayerResource : function(resourceId, params, onSuccess, onFailure, scope)  {
+        // For tests purposes only, when resourceId is actually received this will be ignored.
+        var layerResourceId = 178; 
+        if(typeof(resourceId)=="undefined" || !resourceId)  {
+            throw new Error("Undefined resourceId");
+        }
 
-    saveLayerFromParams: function(params) {
-        var this_ = this;
+        layerResourceId = resourceId;
 
+        var eScope = window;
+        if(typeof(scope)!="undefined") {
+            eScope = scope;
+        }
+
+        var this_= this;
         //Layer save
         if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
-            this.parser.saveLayerByGroup(this.authUser, params,
+            this.parser.saveLayerResourceByGroup(this.authUser, layerResourceId, params,
 
             function(form, action) {
                 /*
                  * ON SUCCESS
                  */
-                this_.parseLayer(form, action);
+                var layer = this_.parseLayer(form, action);                
+                if(onSuccess) {
+                    Ext.defer(onSuccess, 0, eScope, [layer]);
+                }
             },
 
             function(form, action) {
+                if(onFailure) {
+                    Ext.defer(onFailure, 0, eScope,[action.response.responseText]);
+                }
+            });
+        } else if ( !! this.SAVE_MODES.USER == this.saveModeActive) {
+            throw new Error("User persistence of layers not supported!");
+        } else {
+            throw new Error("Anonymous persistence of layers not supported!");
+        }
+    },
+
+    getParser: function() {
+        return this.parser;
+    },
+
+    saveLayerFromParams: function(params, onSuccess, onFailure, scope) {
+        var this_ = this;
+
+        var eScope = window;
+        if(typeof(scope)!="undefined") {
+            eScope = scope;
+        }
+
+        //Layer save
+        if (!!this.SAVE_MODES.GROUP == this.saveModeActive) {
+            this.parser.saveLayerByGroup(this.authUser, params,
+
+           function(form, action) {
                 /*
-                 * ON FAILURE
+                 * ON SUCCESS
                  */
-                this_.parseLayer(form, action);
+                var layer = this_.parseLayer(form, action);                
+                if(onSuccess) {
+                    Ext.defer(onSuccess, 0, eScope, [layer]);
+                }
+            },
+
+            function(form, action) {
+                if(onFailure) {
+                    Ext.defer(onFailure, 0, eScope);
+                }
             });
         } else if ( !! this.SAVE_MODES.USER == this.saveModeActive) {
             this.parser.saveLayerByUser(this.userLogin, params,
@@ -467,7 +574,10 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
         try {
             var json = Ext.util.JSON.decode(action.response.responseText);
             var layer = this.getLayerFromData(json);
-            this.addToMap(layer);
+            // We persist the layer in the last created group for the user.
+            layer.groupID=this._groupIndexes-1;
+            return this.addToMap(layer);
+
         } catch (e) {
             this.onSaveLayerException(e);
         }
