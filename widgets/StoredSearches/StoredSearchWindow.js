@@ -310,7 +310,12 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
 
         var params = {
             size: "letter",
-            margin: 30, // mm
+            margin: {
+                top: 45,
+                bottom: 30,
+                left: 30,
+                right: 30
+            }, // mm
             title: this.controller.title,
             items: this.createPDFDocument(margin, pageWidth, avalaibleWidth),
             outputFile: this.controller.title.toLowerCase().replace(/ /g,"_"),
@@ -322,30 +327,27 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
                         type: "image",
                         url: "http://localhost:9080/theme/app/img/logo_ministerio.png",
                         height: 25
-                    },{
-                        type: "image",
-                        url: "http://localhost:9080/theme/app/img/img_cabecera.jpg",
-                        height: 25,
-                        y: 10,
-                        x: 60
                     },
                     {
                         type: "par",
                         text: this.controller.title,
                         x: 65,
-                        y: 15,
-                        width: 120,
+                        y: 15,                       
                         newFont : {
-                            size: 20
+                            size: 14
                         }
                     }
                 ]
             },
             footer: {
-                margin: 10,
+                margin: 15,
                 items : [{
-                   text: "Página %PAGE_NUMBER% / %PAGE_COUNT%",
-                    align: "R"
+                    text: "http://sig.minenergia.cl/sig-minen",
+                    keepPosition:true
+                },{
+                    text: "Página %PAGE_NUMBER% / %PAGE_COUNT%",
+                    align: "L",
+                    x: pageWidth-margin -26
                 }]
             }
         };
@@ -388,6 +390,8 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         //We generate an XTemplate here by using 2 intermediary XTemplates - one to create the header,
         //the other to create the body (see the escaped {} below)
         var columns = this.grid.getColumnModel().config;
+
+
         
         //build a useable array of store data for the XTemplate
         var data = [];
@@ -409,44 +413,105 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         });
 
 
+        // We remove the colums that have no data because its not applicable.
+         columns = columns.filter(function(column, index){
+            for(var i = 0; i < data.length; i++) {
+                if(data[i][column.dataIndex] !== "No Aplica") {
+                    return true;
+                }
+            }
+
+            return false;
+        },this);
+
+         // We convert the columns in a multi row structure.
+         var maxColumns = 3;
+
+         var rows = [];
+
+         var row = [columns[0]]; // We add the name column first.
+         // We set the rowspan for the name column. We add -1 to not apply to the name column itself!
+         columns[0].rowspan = Math.ceil((columns.length -1)/ maxColumns); 
+         columns[0].colspan = 1;
+         for(var cIdx = 1; cIdx < columns.length; cIdx ++) {
+            // Other columns rowspan is always 1
+            columns[cIdx].rowspan = 1;
+            columns[cIdx].colspan = 1;
+
+
+            if(cIdx == columns.length-1 && cIdx % maxColumns != 0) {
+                // The last column isn't in the last position, so we need
+                // colspan!
+                columns[cIdx].colspan = maxColumns - (cIdx % maxColumns) + 1;
+            }
+
+            row.push(columns[cIdx]);
+
+
+            if(cIdx % maxColumns ==0 || cIdx == columns.length-1) {
+                // The row is finished!
+                rows.push(row);
+                // A new row is started.
+                row = [];
+            }
+         }
+
+
         var headerTemplate = new Ext.XTemplate(
-            '<tr nobr="true" style="background-color: lightgray">',
-              '<tpl for=".">',
-                '<th>{header}</th>',
-              '</tpl>',
-            '</tr>'
+            '<tpl for=".">',
+                '<tr nobr="true" style="background-color: gray" border="0.1mm">',
+                  '<tpl for=".">',
+                    '<th rowspan="{rowspan}" colspan="{colspan}">{header}</th>',
+                  '</tpl>',
+                '</tr>',
+            '</tpl>'
           );
-        var bodyTemplate = new Ext.XTemplate(
-            '<tr nobr="true">',
-              '<tpl for=".">',
-                '<td>\{{dataIndex}\}</td>',
-              '</tpl>',
-            '</tr>'
-          );
+        var bodyTemplate = new Ext.XTemplate(       
+           
+                '<tpl for="rows">',
+                    '<tr style="background-color:{[parent.odd? "lightgray":"white"]}">',
+                      '<tpl for=".">',
+                        '<td rowspan="{rowspan}" colspan="{colspan}">\{{dataIndex}\}</td>',
+                      '</tpl>',
+                    '</tr>',
+                '</tpl>');
         
         //use the headerTpl and bodyTpl XTemplates to create the main XTemplate below
-        var headings = headerTemplate.apply(columns);
-        var body     = bodyTemplate.apply(columns);
+        var headings = headerTemplate.apply(rows);
+        var bodyOddTemplate    = bodyTemplate.apply({
+            rows: rows,
+            odd:true
+        });
+        var bodyEvenTemplate = bodyTemplate.apply({
+            rows: rows,
+            odd: false
+        });
         
         var html = new Ext.XTemplate(          
-              '<table>',
+              '<table border="0.1mm" cellpadding="0.5mm">',
                 '<thead>',
                 headings,
                 '</thead>',
                 '<tbody>',
-                '<tpl for=".">',
-                  body,
-                '</tpl>',
+                    '<tpl for=".">',    
+                        '<tpl if="xindex % 2 == 0">',                    
+                            bodyOddTemplate,
+                        '</tpl>',
+                        '<tpl if="xindex % 2 != 0">',
+                            bodyEvenTemplate,
+                        '</tpl>',
+                    '</tpl>',
                 '</tbody>',
               '</table>'
         ).apply(data);
-
-        console.debug(html);
         
 
         var items = [{
             type: "html",
-            content: html
+            content: html,
+            newFont : {
+                size: 8
+            }
         }];
         return items;
     },
