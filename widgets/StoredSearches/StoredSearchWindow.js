@@ -308,6 +308,11 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         var margin = 30;
         var avalaibleWidth = pageWidth - 2 * margin;
 
+        var items = this.createPDFDocument(margin, pageWidth, avalaibleWidth);
+        if(!items) {
+            return;
+        }
+
         var params = {
             size: "letter",
             margin: {
@@ -317,7 +322,7 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
                 right: 30
             }, // mm
             title: this.controller.title,
-            items: this.createPDFDocument(margin, pageWidth, avalaibleWidth),
+            items: items,
             outputFile: this.controller.title.toLowerCase().replace(/ /g,"_"),
             keepFile: true,
             header: {
@@ -391,6 +396,10 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
         //the other to create the body (see the escaped {} below)
         var columns = this.grid.getColumnModel().config;
 
+        if(!columns || !columns.length ) {
+            Ext.Msg.alert("","Por favor, realice una búsqueda primero.");
+            return false;
+        }
 
         
         //build a useable array of store data for the XTemplate
