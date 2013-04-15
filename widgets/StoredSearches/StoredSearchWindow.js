@@ -507,8 +507,6 @@ Viewer.dialog.StoredSearchWindow = Ext.extend(Ext.Window, {
               '</ul>'
         ).apply(data);
 
-        console.debug(html);
-
         return html;
     },    
 
