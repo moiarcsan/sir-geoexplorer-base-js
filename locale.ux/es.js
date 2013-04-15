@@ -46,7 +46,8 @@ GeoExt.Lang.add(
         makePersistentText: "\u00bfDesea hacerla persistente?",
         uploadKMLText: "Subir un KML",
         uploadRasterText: "Subir un Raster",
-        uploadShapeText: "Subir archivo ZIP con SHP"
+        uploadShapeText: "Subir archivo ZIP con SHP",
+        uploadXlsText: "Subir archivo XLS con coordenadas"
     },
 
     "OpenLayers.Control.LoadLayerWizard.prototype": {
