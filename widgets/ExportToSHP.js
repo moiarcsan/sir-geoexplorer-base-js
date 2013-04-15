@@ -133,7 +133,7 @@ Viewer.plugins.ExportToSHP = Ext.extend(gxp.plugins.Tool, {
             scope: this
         }]);
 
-        var owner = this.target;º
+        var owner = this.target;
         if (this.objectOwner === 'toolbar') {
             owner = app;
         }
