@@ -141,9 +141,9 @@ Viewer.plugins.ExportToKML = Ext.extend(gxp.plugins.Tool, {
             if(record && record.data){
                 this.selectedLayer = record.data.layer;
                 
-                if(this.objectOwner === 'toolbar') {
+               // if(this.objectOwner === 'toolbar') {
                     this.enableOrDisableAction();
-                }
+                //}
             }
         }, this);
         
