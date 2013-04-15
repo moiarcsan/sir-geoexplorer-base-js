@@ -64,6 +64,8 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
     uploadKMLText: "Upload a KML",
     uploadRasterText: "Upload a Raster",
     uploadShapeText: "Upload a SHP in a ZIP file",
+    uploadXlsText: "Upload a XLS file",
+    uploadKmlImportText: "Upload a KML file",
     invalidWMSURLText: "Enter a valid URL to a WMS endpoint (e.g. http://example.com/geoserver/wms)",
       addWMSLayerActionText: "Add WMS layer...",
     temporaryLayerActionText: "Temporary layer...",
@@ -79,6 +81,8 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
     tempLayerDescriptionText: "Create a temporary layer of selected geometry type",
     
     uploadShpWindow: null,
+    uploadXlsWindow: null,
+//    uploadKmlImporterWindow: null,
 
     /** Indicate show preview window **/
     activePreview: true,
@@ -94,7 +98,6 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
 
     /** Default prewiev window height **/
     previewHeight: 256,
-
     /**  If when adding layers the make persist window will be shown **/
     showPersistWindowOnAdd :false,
     
@@ -149,11 +152,23 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
             	scope: this
             }));
             items.push(new Ext.menu.Item({
+                iconCls: 'vw-icon-add-layer-shp',
+                text: this.uploadXlsText,
+                handler: this.uploadXlsHandler,
+            	scope: this
+            }));
+            items.push(new Ext.menu.Item({
                 iconCls: 'gxp-icon-filebrowse',
                 text: this.uploadRasterText,
                 handler: this.uploadRasterHandler,
                 scope: this
             }));
+//            items.push(new Ext.menu.Item({
+//                iconCls: 'vw-icon-add-layer-wms',
+//                text: this.uploadKmlImportText,
+//                handler: this.uploadKmlHandler,
+//                scope: this
+//            }));
             if (this.uploadSource) {
                 //TODO: Activate upload buttons
                 // uploadButton = this.createUploadButton(Ext.menu.Item);
@@ -227,6 +242,45 @@ Viewer.plugins.AddLayers = Ext.extend(gxp.plugins.AddLayers, {
     	this.uploadShpWindow.show();
     	
     },
+     /**
+     * api: method[uploadXlsHandler]
+     */
+    uploadXlsHandler: function() {
+        if (!this.uploadXlsWindow) {
+            this.uploadXlsWindow = new Viewer.plugins.XLSWizard();
+            this.uploadXlsWindow.on({
+                'close': {
+                    fn: function() {
+                        this.uploadXlsWindow = null;                        
+                    },
+                    scope: this
+                }
+            });
+
+        }
+        this.uploadXlsWindow.show();
+        
+    },
+    
+    /**
+     * api: method[uploadKmlHandler]
+     */
+//    uploadKmlHandler: function() {
+//        if (!this.uploadKmlImporterWindow) {
+//            this.uploadKmlImporterWindow = new Viewer.plugins.KMLWizard();
+//            this.uploadKmlImporterWindow.on({
+//                'close': {
+//                    fn: function() {
+//                        this.uploadKmlImporterWindow = null;                        
+//                    },
+//                    scope: this
+//                }
+//            });
+//
+//        }
+//        this.uploadKmlImporterWindow.show();
+//        
+//    },
 
     /**
      * api: method[uploadShapeHandler]
