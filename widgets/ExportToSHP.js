@@ -59,7 +59,7 @@ Viewer.plugins.ExportToSHP = Ext.extend(gxp.plugins.Tool, {
     objectOwner: 'map',
     selectedLayer: null,
 
-    requireLogin : false,
+    requireLogin : true,
     rasterTypeIDs: [1,2,3,8,9,10],
 
     /** private: method[init]
