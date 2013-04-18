@@ -187,11 +187,11 @@ Viewer.plugins.ExportToSHP = Ext.extend(gxp.plugins.Tool, {
 
         var layerSelected = !!this.selectedLayer;
 
-        var hasLayerTypeId= this.selectedLayer.metadata && this.selectedLayer.metadata.layerTypeId;
-        var isVectorial = layerSelected  && hasLayerTypeId && this.rasterTypeIDs.indexOf(this.selectedLayer.metadata.layerTypeId)<0;
+        var hasLayerTypeId= layerSelected && layerSelected.metadata && layerSelected.metadata.layerTypeId;
+        var isVectorial = layerSelected && layerSelected.metadata && hasLayerTypeId && this.rasterTypeIDs.indexOf(layerSelected.metadata.layerTypeId)<0;
         var userLogged = !this.requireLogin || !!app.persistenceGeoContext.userLogin;
 
-        if (isVectorial && userLogged  && this.isLocalGeoserver(this.selectedLayer.url)) {
+        if (isVectorial && userLogged  && this.isLocalGeoserver(layerSelected.url)) {
             Ext.each(this.actions, function(item) {
                 item.enable();
                     }, this);
