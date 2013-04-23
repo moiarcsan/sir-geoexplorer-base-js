@@ -120,18 +120,33 @@ gxp.plugins.AddPointToMap = Ext.extend(gxp.plugins.Tool, {
     	var geometryType = null;
     	var authIdLayer = null;
     	var authIdUser = null;
+        var isAdmin = null;
+        var layerId = null;
+        var isTemporal = null;
     	// Institución de la capa
-    	if(!!layer && !!layer.data && !!layer.data.layer && layer.data.layer.authId){
-    		authIdLayer = layer.data.layer.authId;
-    	}
+    	if(!!layer && !!layer.data && !!layer.data.layer){
+            layer = layer.data.layer;
+            if(layer.authId){
+                authIdLayer = layer.authId;
+            }
+
+            if(layer.layerID) {
+                layerId = layer.layerID;
+            }
+
+            if(layer.metadata && layer.metadata.temporal) {
+                isTemporal = true;
+            }
+        } 
     	// Institución del usuario
     	if(!!app && !!app.persistenceGeoContext 
     			&& !!app.persistenceGeoContext.userInfo 
     			&& !!app.persistenceGeoContext.userInfo.authorityId){
     		authIdUser = app.persistenceGeoContext.userInfo.authorityId;
+            isAdmin = app.persistenceGeoContext.userInfo.admin
     	}
     	// Comprobamos si el usuario tiene permisos en la capa
-    	if(!!authIdLayer && !!authIdUser && authIdLayer == authIdUser){
+    	if(!!authIdUser && (isTemporal || layerId && (isAdmin || authIdLayer == authIdUser))){
     		// There's a schema
         	if(!schema){
         		// Disable the edit options
