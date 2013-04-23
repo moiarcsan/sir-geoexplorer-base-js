@@ -192,6 +192,12 @@ gxp.plugins.AddPointToMap = Ext.extend(gxp.plugins.Tool, {
     	featureManager.getBaseParamsAndUrl = queryManager.getBaseParamsAndUrl;
     	featureManager.prepareWFS = queryManager.prepareWFS;
     	return featureManager;
+    },
+
+    setHandler: function(multi){
+        this.actions[0].control.handler.destroy();
+        this.actions[0].control.handler = new OpenLayers.Handler.Point(this.actions[0].control, this.actions[0].control.callbacks,
+                Ext.apply(this.actions[0].control.handlerOptions, {multi: multi}));
     }
 });
 

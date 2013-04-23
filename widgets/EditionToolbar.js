@@ -79,6 +79,11 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             ptype: 'gxp_newelementfromcoords',
             actionTarget: 'editiontbar',
             tooltip: this.tooltipAddNewElement
+        },{
+            ptype: "vw_featureeditor",
+            actionTarget: 'editiontbar',
+            featureManager : "featuremanager",
+            cls: "hiddenFeatureEditor"
         }];
 
         Viewer.widgets.EditionToolbar.superclass.constructor.call(this, Ext.apply({
