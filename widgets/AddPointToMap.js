@@ -95,7 +95,11 @@ gxp.plugins.AddPointToMap = Ext.extend(gxp.plugins.Tool, {
             map: this.target.mapPanel.map
 		}));
 		actions = gxp.plugins.AddPointToMap.superclass.addActions.apply(this, actions);
-		featureManager.on("layerchange", this.onLayerChange, this);
+		featureManager.on("layerchange", this._enableOrDisable, this);
+        app.on("loginstatechange", this._enableOrDisable,this);
+
+        this._enableOrDisable();
+
 		return actions;
 	},
 	/** private: method[getFeatureManager]
@@ -111,21 +115,25 @@ gxp.plugins.AddPointToMap = Ext.extend(gxp.plugins.Tool, {
         }
         return manager;
     },
-    /** private: method[onLayerChange]
-     *  :arg mgr: :class:`gxp.plugins.FeatureManager`
-     *  :arg layer: ``GeoExt.data.LayerRecord``
-     *  :arg schema: ``GeoExt.data.AttributeStore``
-     */
-    onLayerChange: function(mgr, layer, schema) {
-    	var geometryType = null;
-    	var authIdLayer = null;
-    	var authIdUser = null;
+
+     /** private: method[_enableOrDisable]
+      */
+    _enableOrDisable : function() {
+        var mgr = this.getFeatureManager();
+        var layerRecord = mgr.layerRecord;
+        var schema = mgr.schema;
+
+
+        var geometryType = null;
+        var authIdLayer = null;
+        var authIdUser = null;
         var isAdmin = null;
         var layerId = null;
         var isTemporal = null;
-    	// Institución de la capa
-    	if(!!layer && !!layer.data && !!layer.data.layer){
-            layer = layer.data.layer;
+        var layer = null;
+        // Institución de la capa
+        if(!!layerRecord && !!layerRecord.data && !!layerRecord.data.layer){
+            layer = layerRecord.data.layer;
             if(layer.authId){
                 authIdLayer = layer.authId;
             }
@@ -138,40 +146,41 @@ gxp.plugins.AddPointToMap = Ext.extend(gxp.plugins.Tool, {
                 isTemporal = true;
             }
         } 
-    	// Institución del usuario
-    	if(!!app && !!app.persistenceGeoContext 
-    			&& !!app.persistenceGeoContext.userInfo 
-    			&& !!app.persistenceGeoContext.userInfo.authorityId){
-    		authIdUser = app.persistenceGeoContext.userInfo.authorityId;
+        // Institución del usuario
+        if(!!app && !!app.persistenceGeoContext 
+                && !!app.persistenceGeoContext.userInfo 
+                && !!app.persistenceGeoContext.userInfo.authorityId){
+            authIdUser = app.persistenceGeoContext.userInfo.authorityId;
             isAdmin = app.persistenceGeoContext.userInfo.admin
-    	}
-    	// Comprobamos si el usuario tiene permisos en la capa
-    	if(!!authIdUser && (isTemporal || layerId && (isAdmin || authIdLayer == authIdUser))){
-    		// There's a schema
-        	if(!schema){
-        		// Disable the edit options
-        		this.actions[0].disable();
-        	}else{
-        		// Feature Types
-        		if(!!mgr.geometryType){
-        			if(mgr.geometryType.indexOf("Multi") != -1){
-        				geometryType = mgr.geometryType.replace("Multi", "");
-        			}else{
-        				geometryType = mgr.geometryType;
-        			}
-        			if(!!geometryType && geometryType == "Point"){
-        				this.setActionControlLayer(mgr.featureLayer);
-        				this.actions[0].enable();
-        			}else{
-        				this.actions[0].disable();
-        			}
-        		}
-        	}
-    	}else{
-    		// Disable the edit options
-    		this.actions[0].disable();
-    	}
+        }
+        // Comprobamos si el usuario tiene permisos en la capa
+        if(layer && !!authIdUser && (isTemporal || layerId && (isAdmin || authIdLayer == authIdUser))){
+            // There's a schema
+            if(!schema){
+                // Disable the edit options
+                this.actions[0].disable();
+            }else{
+                // Feature Types
+                if(!!mgr.geometryType){
+                    if(mgr.geometryType.indexOf("Multi") != -1){
+                        geometryType = mgr.geometryType.replace("Multi", "");
+                    }else{
+                        geometryType = mgr.geometryType;
+                    }
+                    if(!!geometryType && geometryType == "Point"){
+                        this.setActionControlLayer(mgr.featureLayer);
+                        this.actions[0].enable();
+                    }else{
+                        this.actions[0].disable();
+                    }
+                }
+            }
+        }else{
+            // Disable the edit options
+            this.actions[0].disable();
+        }
     },
+
     /** private: method[setActionControlLayer]
      *  :arg layer: OpenLayers.Layer
      */
