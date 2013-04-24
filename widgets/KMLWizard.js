@@ -217,7 +217,7 @@ Viewer.plugins.KMLWizard = Ext.extend(Ext.Window, {
                         		visibility: true                            					
                         	});
                         layer.metadata.layerResourceId = resp.data.layerResourceId;
-                        layer.metadata.layerTypeId = 7;
+                        layer.metadata.layerTypeId = resp.data.layerTypeId;
                         layer.metadata.temporal = true;
                         Viewer.getMapPanel().map.addLayer(layer);
                         this.close();
