@@ -42,6 +42,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
     saveChangesText: "Save Changes",
     discardChangesText: "Discard changes",
     cancelText: "Cancel",
+    removeText: "Remove",
     waitText:"Please wait...",
     geometryLabels : {
         "Point" : "Enter the points to add to the selected layer:",
@@ -222,10 +223,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
                     return;
                 }
 
-
                 Ext.Msg.alert("",self.saveSuccessText);
-
-                console.debug(arguments);
 
                 self.currentState = self.STATE_NONE;
                 self.btnSave.disable();
@@ -473,7 +471,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
                                 header: '',
                                 width: 50,
                                 renderer: function(v, p, record, rowIndex) {
-                                    return '<div class="vw-remove-grid-button">Remove</div>';                                    
+                                    return '<div class="vw-remove-grid-button">'+this.removeText+'</div>';                                    
                                 }
                             }
                         ]

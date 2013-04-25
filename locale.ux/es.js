@@ -507,7 +507,8 @@ GeoExt.Lang.add(
         saveMsgText: 'La capa activa tiene cambios sin guardar, ¿Desea guardarlos ahora?',
         waitText: "Por favor, espere...",
         saveErrorText: "Hubo un problema al guardar el nuevo elemento, pruebe de nuevo en unos instantes.",
-        saveSuccessText: "El nuevo elemento se añadió con éxito a la capa."
+        saveSuccessText: "El nuevo elemento se añadió con éxito a la capa.",
+        removeText: "Eliminar"
     }
 
 });
