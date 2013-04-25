@@ -175,6 +175,11 @@ gxp.plugins.NewElementFromCoordsAction = Ext.extend(gxp.plugins.Tool, {
         }else{
             // Disable the edit options
             this.actions[0].disable();
+
+            var ds = Viewer.getComponent('NewElementFromCoords');
+            if(ds && ds.isVisible()) {
+                ds.hide();
+            }
         }
     },
 
