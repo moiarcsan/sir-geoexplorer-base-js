@@ -489,6 +489,14 @@ GeoExt.Lang.add(
             cancel: "Cancelar",
             ok: "Aceptar"
         }
+    },
+
+    "Viewer.dialog.NewElementFromCoords.prototype" : {
+        geometryLabels : {
+            "Point" : "Introduzca los puntos a añadir a la capa seleccionada:",
+            "Line": "Introduzca los vértices de la línea a añadir a la capa seleccionada:",
+            "Polygon" : "Introduzca los vértices del polígono a añadir a la capa seleccionada:"
+        },
     }
 
 });
