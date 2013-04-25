@@ -28,9 +28,15 @@
 
 Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
 
-    TOOL_POINT: 'POINT',
-    TOOL_LINE: 'LINE',
-    TOOL_POLYGON: 'POLYGON',
+    TOOL_POINT: 'Point',
+    TOOL_LINE: 'Line',
+    TOOL_POLYGON: 'Polygon',   
+
+    geometryLabels : {
+        "Point" : "Punto",
+        "Line": "Línea",
+        "Polygon" : "Polígono"
+    },
 
     STATE_NONE: 0,
     STATE_EDITING: 1,
@@ -41,6 +47,8 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
     currentState: null,
     activeLayer: null,
     previousFeatures: null,
+
+    featureManager : "featuremanager",
 
     constructor: function(config) {
 
@@ -75,8 +83,9 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
      * the previous data.
      */
     _onShow: function() {
+     
         this.searchByCoordinates.clear();
-        this.changeActiveLayer(this.layerController.getSelectedLayer());
+        this.changeActiveLayer();
         this.currentState = this.STATE_NONE;
     },
 
@@ -92,23 +101,10 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             return true;
         }
 
-        var cancel;
-        try {
-            cancel = !(layer.metadata.geometries.length > 0);
-        } catch(e) {
-            cancel = true;
-        }
-
-        if (cancel === true) {
-            return false;
-        }
-
-
         if (this.currentState == this.STATE_NONE) {
-            this.changeActiveLayer(layer);
+            this.changeActiveLayer();
 
         } else {
-
             this.askSaveFeatures(this.ACTION_CLEAR, layer);
             return false;
         }
@@ -126,19 +122,25 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
     },
 
     getCurrentGeometries: function() {
-        try {
-            return this.activeLayer.metadata.geometries[0];
-        } catch (e) {
-            return null;
+        var geometryType = app.tools[this.featureManager].geometryType;
+        if(geometryType.indexOf("Multi") != -1){
+            geometryType = geometryType.replace("Multi", "");
         }
+
+        switch(geometryType) {
+            case "Curve":
+                geometryType= "Line";
+                break;
+            case "Surface":
+                geometryType= "Polygon";
+                break;
+        }
+
+        return geometryType;
     },
 
-    getGeometryLabel: function(geometry) {
-        var labels = {};
-        labels[this.TOOL_POINT] =  'Punto';
-        labels[this.TOOL_LINE] = 'Línea';
-        labels[this.TOOL_POLYGON] = 'Polígono';
-        return labels[geometry] || null;
+    getGeometryLabel: function(geometry) {       
+        return this.geometryLabels[geometry] || null;
     },
 
     /**
@@ -146,10 +148,13 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
      * previous layer data.
      * Stores the features the new layer currently has.
      */
-    changeActiveLayer: function(layer) {
+    changeActiveLayer: function() {
+        if(!this.activeLayer) {
+            this.activeLayer = new OpenLayers.Layer.Vector("tmp layer",{displayInLayerSwitcher:false});
+            Viewer.getMapPanel().map.addLayer(this.activeLayer);
+        }
 
-        this.activeLayer = layer;
-        this.previousFeatures = layer.features;
+        this.activeLayer.removeAllFeatures();
         this.pointStore.removeAll();
         this.pointStore.commitChanges();
         this.lblGeometryInfo.setText(this.getGeometryLabel(this.getCurrentGeometries()));
@@ -211,10 +216,6 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
      */
     onPointAdded: function(coords) {
 
-        if (this.activeLayer === null) {
-            return;
-        }
-
         this.currentState = this.STATE_EDITING;
 
         var point = coords.getPoint(this.map.getProjectionObject());
@@ -223,6 +224,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             lon: point.lon
         });
         this.pointStore.add(record);
+        this.grid.getView().refresh();
     },
 
     /**
@@ -257,16 +259,14 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
         style_blue.strokeColor = 'blue'; 
         style_blue.fillColor = 'blue';
 
-        if (geometry == this.TOOL_POINT) {
 
-            this.pointStore.each(function(record) {
+        this.pointStore.each(function(record) {
                 var point = new OpenLayers.Geometry.Point(record.get('lon'), record.get('lat'));
                 var pointFeature = new OpenLayers.Feature.Vector(point, null, style_blue);
                 features.push(pointFeature);
             }, this);
 
-        } else if (geometry == this.TOOL_LINE) {
-
+        if (geometry == this.TOOL_LINE) {
             var points = [];
 
             this.pointStore.each(function(record) {
@@ -291,12 +291,13 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             features.push(polygonFeature);
 
         } else {
-            // No tool selected?
-            return false;
+            throw new Error("New elementFromCoords::onPointListUpdated: Unsupported geometry type!");
         }
 
+        
+
         this.activeLayer.removeAllFeatures();
-        this.activeLayer.addFeatures(features.concat(this.previousFeatures));
+        this.activeLayer.addFeatures(features);
 
         this.btnSave.enable();
     },
@@ -380,7 +381,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
                         buttonDecimalClicked: this.onPointAdded.createDelegate(this)
                     }
                 }),
-                new Ext.grid.GridPanel({
+                this.grid = new Ext.grid.GridPanel({
                     store: this.pointStore,
                     colModel: new Ext.grid.ColumnModel({
                         defaults: {
