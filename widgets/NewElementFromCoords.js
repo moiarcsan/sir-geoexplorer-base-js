@@ -32,6 +32,8 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
     TOOL_LINE: 'Line',
     TOOL_POLYGON: 'Polygon',   
 
+    action: null,
+
     addPointText: 'Add Point',
     latText: "Latitude",
     lonText: "Longitude",
@@ -40,11 +42,16 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
     saveChangesText: "Save Changes",
     discardChangesText: "Discard changes",
     cancelText: "Cancel",
+    waitText:"Please wait...",
     geometryLabels : {
         "Point" : "Enter the points to add to the selected layer:",
         "Line": "Enter the vertexes of the line to be added to the selected layer:",
         "Polygon" : "Enter the vertexes of the polygon to be added to the selected layer:"
     },
+
+    saveErrorText: "There was an error saving the feature. Please try again in a few moments.",
+    saveSuccessText: "The new feature was successfully added to the layer.",
+
 
     STATE_NONE: 0,
     STATE_EDITING: 1,
@@ -55,8 +62,6 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
     currentState: null,
     activeLayer: null,
     previousFeatures: null,
-
-    featureManager : "featuremanager",
 
     constructor: function(config) {
 
@@ -113,7 +118,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             this.changeActiveLayer();
 
         } else {
-            this.askSaveFeatures(this.ACTION_CLEAR, layer);
+            this.askSaveFeatures(this.ACTION_CLEAR);
             return false;
         }
     },
@@ -130,7 +135,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
     },
 
     getCurrentGeometries: function() {
-        var geometryType = app.tools[this.featureManager].geometryType;
+        var geometryType = this.action.getFeatureManager().geometryType;
         if(geometryType.indexOf("Multi") != -1){
             geometryType = geometryType.replace("Multi", "");
         }
@@ -175,12 +180,12 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
      * and executes an action, closes the current window
      * or selects a new layer.
      */
-    askSaveFeaturesCallback: function(buttonId, inputText, options, action, layer) {
+    askSaveFeaturesCallback: function(buttonId, inputText, options, action) {
 
         if (buttonId == 'yes') {
 
             this.currentState = this.STATE_NONE;
-            this.layerController.save(this.activeLayer);
+            this._addFeaturesToLayer();
 
         } else if (buttonId == 'no') {
 
@@ -188,32 +193,73 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             this.activeLayer.removeAllFeatures();
 
         } else  {
+            // Cancelling.
             return;
         }
 
         if (action == this.ACTION_CLEAR) {
-
-            //this.layerController.selectNodeByPath(newNode.getPath());
-            this.changeActiveLayer(layer);
+            this.changeActiveLayer();
 
         } else if (action == this.ACTION_HIDE) {
-
             this.hide();
         }
     },
+
+    _addFeaturesToLayer: function() {
+        var featureManager = this.action.getFeatureManager();
+        var protocol = featureManager.featureStore.proxy.protocol;
+
+        Ext.Msg.wait(this.waitText);
+        var self = this;
+        protocol.commit(this.features, {
+            callback: function(response){
+                Ext.Msg.updateProgress(1);
+                Ext.Msg.hide();
+
+
+                if(!response.success()) {
+                    Ext.Msg.alert("",self.saveErrorText);
+                    return;
+                }
+
+
+                Ext.Msg.alert("",self.saveSuccessText);
+
+                console.debug(arguments);
+
+                self.currentState = self.STATE_NONE;
+                self.btnSave.disable();
+
+              
+
+                self.activeLayer.removeAllFeatures();
+
+                // The grid's store is cleared.
+                self.pointStore.removeAll();
+                self.pointStore.commitChanges();
+
+                // We reload the layer
+                featureManager.layerRecord.data.layer.redraw(true);
+                featureManager.featureStore.reload();
+            }
+        });
+    },
+
 
     /**
      * Shows a Yes/No/Cancel dialog when the user tries to close the current
      * window or tries to select another layer and there are pending
      * changes in the active layer.
      */
-    askSaveFeatures: function(action, layer) {
+    askSaveFeatures: function(action) {
 
         var buttons = {
             yes: this.saveChangesText,
             no: this.discardChangesText,
         };
 
+        // If we are hiding we show a cancel button.
+        // In layer changes we cannot cancel because we cannot cancel the layer change.
         if(action == this.ACTION_HIDE) {
             buttons["cancel"] = this.cancelText;
         }
@@ -222,7 +268,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             title: this.saveTitleText,
             msg: this.saveMsgText,
             buttons: buttons,
-            fn: this.askSaveFeaturesCallback.createDelegate(this, [action, layer], true),
+            fn: this.askSaveFeaturesCallback.createDelegate(this, [action], true),
             icon: Ext.MessageBox.QUESTION
         });
     },
@@ -280,10 +326,17 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
         this.pointStore.each(function(record) {
                 var point = new OpenLayers.Geometry.Point(record.get('lon'), record.get('lat'));
                 var pointFeature = new OpenLayers.Feature.Vector(point, null, style_blue);
+
+                if(geometry==this.TOOL_POINT) {
+                     pointFeature.state = OpenLayers.State.INSERT;
+                }
+
                 features.push(pointFeature);
             }, this);
 
-        if (geometry == this.TOOL_LINE) {
+        if(geometry == this.TOOL_POINT) {
+            this.btnSave.enable();
+        } else if (geometry == this.TOOL_LINE) {
             var points = [];
 
             this.pointStore.each(function(record) {
@@ -292,7 +345,12 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
 
             var line = new OpenLayers.Geometry.LineString(points);
             var lineFeature = new OpenLayers.Feature.Vector(line, null, style_blue);
+            lineFeature.state = OpenLayers.State.INSERT;
             features.push(lineFeature);
+
+            if(points.length>1) {
+                this.btnSave.enable();
+            }
 
         } else if (geometry == this.TOOL_POLYGON) {
 
@@ -305,9 +363,14 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             var lring = new OpenLayers.Geometry.LinearRing(points);
             var polygon = new OpenLayers.Geometry.Polygon([lring]);
             var polygonFeature = new OpenLayers.Feature.Vector(polygon, null, style_blue);
+            polygonFeature.state = OpenLayers.State.INSERT;
             features.push(polygonFeature);
 
-        } else if(geometry != this.TOOL_POINT) {
+            if(points.length > 2) {
+                this.btnSave.enable();
+            }
+
+        } else  {
             throw new Error("New elementFromCoords::onPointListUpdated: Unsupported geometry type!");
         }
 
@@ -316,14 +379,12 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
         this.activeLayer.removeAllFeatures();
         this.activeLayer.addFeatures(features);
 
-        this.btnSave.enable();
+        this.features = features;
+
     },
 
     onSaveButtonClicked: function() {
-        this.currentState = this.STATE_NONE;
-        this.layerController.save(this.activeLayer);
-        this.btnSave.disable();
-        this.previousFeatures = this.activeLayer.features;
+        this._addFeaturesToLayer();
     },
 
     onCancelButtonClicked: function() {

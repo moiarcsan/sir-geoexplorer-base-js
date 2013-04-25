@@ -113,7 +113,7 @@ gxp.plugins.NewElementFromCoordsAction = Ext.extend(gxp.plugins.Tool, {
                     ds = new Viewer.dialog.NewElementFromCoords({
                         mapPanel: mapPanel,
                         map: mapPanel.map,
-                        activeLayer: Viewer.getController('Layers').getSelectedLayer()
+                        action: this
                     });
                     Viewer.registerComponent('NewElementFromCoords', ds);
                 }
