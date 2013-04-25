@@ -432,6 +432,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
         var padding = 'padding: 10px 16px;';
         var border = 'border: 0px solid transparent;'
 
+        var self= this;
         var c = {
             xtype: 'panel',
             layout: {
@@ -471,7 +472,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
                                 header: '',
                                 width: 50,
                                 renderer: function(v, p, record, rowIndex) {
-                                    return '<div class="vw-remove-grid-button">'+this.removeText+'</div>';                                    
+                                    return '<div class="vw-remove-grid-button">'+self.removeText+'</div>';                                    
                                 }
                             }
                         ]
