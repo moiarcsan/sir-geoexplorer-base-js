@@ -492,11 +492,19 @@ GeoExt.Lang.add(
     },
 
     "Viewer.dialog.NewElementFromCoords.prototype" : {
+        addPointText: "Añadir Punto",
         geometryLabels : {
             "Point" : "Introduzca los puntos a añadir a la capa seleccionada:",
             "Line": "Introduzca los vértices de la línea a añadir a la capa seleccionada:",
             "Polygon" : "Introduzca los vértices del polígono a añadir a la capa seleccionada:"
         },
+        latText: "Latitud",
+        lonText: "Longitud",
+        saveTitleText: '¿Guardar cambios en la capa?',
+        saveChangesText: "Guardar cambios",
+        discardChangesText: "Descartar cambios",
+        cancelText: "Cancelar",
+        saveMsgText: 'La capa activa tiene cambios sin guardar, ¿Desea guardarlos ahora?'
     }
 
 });

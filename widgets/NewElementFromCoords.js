@@ -32,10 +32,18 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
     TOOL_LINE: 'Line',
     TOOL_POLYGON: 'Polygon',   
 
+    addPointText: 'Add Point',
+    latText: "Latitude",
+    lonText: "Longitude",
+    saveTitleText: 'Save Layer Changes?',
+    saveMsgText: 'The active layer has changed. Save the changes now?',
+    saveChangesText: "Save Changes",
+    discardChangesText: "Discard changes",
+    cancelText: "Cancel",
     geometryLabels : {
-        "Point" : "Punto",
-        "Line": "Línea",
-        "Polygon" : "Polígono"
+        "Point" : "Enter the points to add to the selected layer:",
+        "Line": "Enter the vertexes of the line to be added to the selected layer:",
+        "Polygon" : "Enter the vertexes of the polygon to be added to the selected layer:"
     },
 
     STATE_NONE: 0,
@@ -201,10 +209,19 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
      */
     askSaveFeatures: function(action, layer) {
 
+        var buttons = {
+            yes: this.saveChangesText,
+            no: this.discardChangesText,
+        };
+
+        if(action == this.ACTION_HIDE) {
+            buttons["cancel"] = this.cancelText;
+        }
+
         Ext.Msg.show({
-            title: '¿Guardar cambios en la capa?',
-            msg: 'La capa activa tiene cambios sin guardar, ¿Desea guardarlos ahora?',
-            buttons: Ext.Msg.YESNOCANCEL,
+            title: this.saveTitleText,
+            msg: this.saveMsgText,
+            buttons: buttons,
             fn: this.askSaveFeaturesCallback.createDelegate(this, [action, layer], true),
             icon: Ext.MessageBox.QUESTION
         });
@@ -290,7 +307,7 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             var polygonFeature = new OpenLayers.Feature.Vector(polygon, null, style_blue);
             features.push(polygonFeature);
 
-        } else {
+        } else if(geometry != this.TOOL_POINT) {
             throw new Error("New elementFromCoords::onPointListUpdated: Unsupported geometry type!");
         }
 
@@ -364,17 +381,17 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
             },
             items: [{
                     xtype: 'panel',
-                    height: 40,
+                    height: 35,
                     bodyStyle: padding + border,
                     items: this.lblGeometryInfo
                 },
                 this.searchByCoordinates = new Viewer.widgets.SearchByCoordinates({
                     mapPanel: this.mapPanel,
                     map: this.map,
-                    height: 130,
-                    buttonUtmLabel: 'Añadir',
-                    buttonLonLatLabel: 'Añadir',
-                    buttonDecimalLabel: 'Añadir',
+                    height: 150,
+                    buttonUtmLabel: this.addPointText,
+                    buttonLonLatLabel: this.addPointText,
+                    buttonDecimalLabel: this.addPointText,
                     listeners: {
                         buttonUtmClicked: this.onPointAdded.createDelegate(this),
                         buttonLonLatClicked: this.onPointAdded.createDelegate(this),
@@ -389,14 +406,13 @@ Viewer.dialog.NewElementFromCoords = Ext.extend(Ext.Window, {
                             sortable: false
                         },
                         columns: [
-                            { header: 'Latitud' },
-                            { header: 'Longitud' },
+                            { header: this.latText},
+                            { header: this.lonText},
                             {
                                 header: '',
                                 width: 50,
                                 renderer: function(v, p, record, rowIndex) {
-                                    return '<div class="vw-remove-grid-button">Remove</div>';
-                                    //return '<input type="button" value="Remove" class="vw_delete_grid_button" />';
+                                    return '<div class="vw-remove-grid-button">Remove</div>';                                    
                                 }
                             }
                         ]
