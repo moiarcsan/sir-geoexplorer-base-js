@@ -480,6 +480,15 @@ GeoExt.Lang.add(
 
     "gxp.plugins.FeatureEditor.propertyEditor.prototype": {
         exceptionTitle: "Fallo al guardar"
+    },
+
+    "Ext.MessageBox" :{
+        buttonText: {
+            yes: "Sí",
+            no: "No",
+            cancel: "Cancelar",
+            ok: "Aceptar"
+        }
     }
 
 });
