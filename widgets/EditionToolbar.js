@@ -49,7 +49,8 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             ptype: 'gxp_selectfeature',
             actionTarget: 'editiontbar',
             tooltip: this.tooltipSelectFeature,
-            toggleGroup: "editionTools"
+            toggleGroup: "editionTools",
+            featureManager: "querymanager"
         },{
             ptype: 'gxp_addtagtomap',
             id: 'addtagtomap',
