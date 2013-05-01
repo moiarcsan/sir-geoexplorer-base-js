@@ -97,10 +97,7 @@ Viewer.plugins.Styler = Ext.extend(gxp.plugins.Styler, {
             method: "PUT",
             url: url,
             callback: function(options, success, response) {
-                // we expect a 405 error code here if we are dealing
-                // with GeoServer and have write access.
-                this.launchAction.setDisabled(response.status !== 405 
-                        && response.status !== 401); // 401 is proxy result not logged
+                this.launchAction.setDisabled(response.status !== 200); // 200 pproxy!!
             },
             scope: this
         });
