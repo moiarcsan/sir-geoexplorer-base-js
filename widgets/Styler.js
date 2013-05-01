@@ -93,6 +93,10 @@ Viewer.plugins.Styler = Ext.extend(gxp.plugins.Styler, {
      *  Enable the launch action if the service is available.
      */
     enableActionIfAvailable: function(url) {
+        // ovewrite url with app.proxy
+        if(url.indexOf(app.proxy) < 0){
+            url = app.proxy + url;
+        }
         Ext.Ajax.request({
             method: "PUT",
             url: url,
