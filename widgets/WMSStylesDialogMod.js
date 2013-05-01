@@ -231,7 +231,7 @@ Viewer.plugins.WMSStylesDialogMod = Ext.extend(gxp.WMSStylesDialog, {
  *  "styleselected", "modified" and "saved" events that take care of saving
  *  styles and keeping the layer view updated.
  */
-gxp.WMSStylesDialog.createGeoServerStylerConfig = function(layerRecord, url) {
+gxp.WMSStylesDialog.createGeoServerStylerConfig = function(layerRecord, url, persistenceGeoContext) {
     var layer = layerRecord.getLayer();
     if (!url) {
         url = layerRecord.get("restUrl");
@@ -240,18 +240,30 @@ gxp.WMSStylesDialog.createGeoServerStylerConfig = function(layerRecord, url) {
         url = layer.url.split("?").shift().replace(/\/(wms|ows)\/?$/, "/rest");
     }
 
+    // Cleaning url for call to rest API
     // ovewrite url with app.proxy
     if(url.indexOf(app.proxy) < 0){
         url = app.proxy + url;
+    }
+    // delete '/ows/' from URL
+    if(url.indexOf("/ows/") > -1){
+        url = url.replace("/ows/", "/");
+    }
+
+    var plugins = [];
+
+    if(!!persistenceGeoContext 
+            && persistenceGeoContext.isOwner(layer)){
+        plugins.push({
+            ptype: "gxp_geoserverstylewriter",
+            baseUrl: url
+        });
     }
 
     return {
         xtype: "gxp_wmsstylesdialog",
         layerRecord: layerRecord,
-        plugins: [{
-            ptype: "gxp_geoserverstylewriter",
-            baseUrl: url
-        }],
+        plugins: plugins,
         listeners: {
             "styleselected": function(cmp, style) {
                 layer.mergeNewParams({

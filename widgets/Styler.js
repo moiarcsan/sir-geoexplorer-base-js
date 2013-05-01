@@ -117,7 +117,7 @@ Viewer.plugins.Styler = Ext.extend(gxp.plugins.Styler, {
         // TODO: Inheritance of target between WMSStyleDialog, RulePanel... PointSymbolizerMod
         Viewer.PointSymbolizerMod.prototype.defaultRestUrl = this.target.defaultRestUrl;
 
-        Ext.apply(config, gxp.WMSStylesDialog.createGeoServerStylerConfig(record));
+        Ext.apply(config, gxp.WMSStylesDialog.createGeoServerStylerConfig(record, null, this.target.persistenceGeoContext));
         if (this.rasterStyling === true) {
             config.plugins.push({
                 ptype: "gxp_wmsrasterstylesdialog"

@@ -545,7 +545,7 @@ GeoExt.Lang.add(
         removeText: "Eliminar"
     },
 
-    "Viewer.plugins.WMSStylesDialogMod": {
+    "Viewer.plugins.WMSStylesDialogMod.prototype": {
         updateDefaultStyleText: 'Guardar',
         updateDefaultTip: 'Establece el estilo seleccionado como estilo por defecto al visualizar la capa'
     }
