@@ -151,7 +151,7 @@ GeoExt.Lang.add(
         fieldNameEmptyText: 'Escriba un nombre para el campo (letras, números, . y _)',
     	descriptionTextKML: "Escriba el nombre para la nueva capa y seleccione un archivo KML para subir.",
         descriptionTextXLS1: "Escriba el nombre para la nueva capa y seleccione un archivo XLS para subir.",
-        descriptionTextXLS2: "Seleccione el sistema de referencia y las columnas en las que se almacenan las coordenadas X e Y dentro del fichero.",
+        descriptionTextXLS2: "Seleccione el sistema de referencia y las columnas en las que se almacenan las coordenadas X e Y dentro del fichero."
     },
     
     "Viewer.plugins.XLSWizard.prototype": {
@@ -173,7 +173,7 @@ GeoExt.Lang.add(
         coordinateYLabel: 'Coordenada Y ',
         columsEmpty: '* Las columnas con cabecera vacía no serán importadas.',
         descriptionTextXLS1: "Escriba el nombre para la nueva capa y seleccione un archivo XLS para subir.",
-        descriptionTextXLS2: "Seleccione el sistema de referencia y las columnas en las que se almacenan las coordenadas X e Y dentro del fichero.",
+        descriptionTextXLS2: "Seleccione el sistema de referencia y las columnas en las que se almacenan las coordenadas X e Y dentro del fichero."
     },
 
     "Viewer.plugins.RasterUploadPanel.prototype": {
