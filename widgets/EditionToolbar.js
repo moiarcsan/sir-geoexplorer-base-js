@@ -36,6 +36,8 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
 	tooltipAddPolygon: "Add Polygon to Map",
 	tooltipAddBuffer: "Create a new buffer",
 	tooltipAddNewElement: "Create a new element",
+	tooltipAddColumn: "Add a new column",
+	tooltipDeleteColumn: "Delete columns",
 
     constructor: function(config) {
 
@@ -95,11 +97,21 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             actionTarget: 'editiontbar',
             tooltip: this.tooltipAddNewElement,
             toggleGroup: "editionTools"
-        },{
+        }, {
+            ptype: 'gxp_adddatacolumn',
+            actionTarget: 'editiontbar',
+            tooltip: this.tooltipAddColumn,
+            toggleGroup: "editionTools"
+        }, {
+            ptype: 'gxp_deletedatacolumn',
+            actionTarget: 'editiontbar',
+            tooltip: this.tooltipDeleteColumn,
+            toggleGroup: "editionTools"
+        }, { //add new button before. This tool MUST BE THE LAST ALWAYS
             ptype: "vw_featureeditor",
             actionTarget: 'editiontbar',
             featureManager : "featuremanager",
-            cls: "hiddenFeatureEditor"       
+            cls: "hiddenFeatureEditor"
         }];
 
         Viewer.widgets.EditionToolbar.superclass.constructor.call(this, Ext.apply({
