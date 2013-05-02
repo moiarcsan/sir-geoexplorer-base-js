@@ -36,8 +36,6 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
 	tooltipAddPolygon: "Add Polygon to Map",
 	tooltipAddBuffer: "Create a new buffer",
 	tooltipAddNewElement: "Create a new element",
-	tooltipAddColumn: "Add a new column",
-	tooltipDeleteColumn: "Delete columns",
 
     constructor: function(config) {
 
@@ -51,7 +49,8 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             ptype: 'gxp_selectfeature',
             actionTarget: 'editiontbar',
             tooltip: this.tooltipSelectFeature,
-            toggleGroup: "editionTools"
+            toggleGroup: "editionTools",
+            featureManager: "querymanager"
         },{
             ptype: 'gxp_addtagtomap',
             id: 'addtagtomap',
@@ -68,6 +67,7 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             iconCls: 'vw-icon-add-point',
             geometryTypes : ["Point"],
             geometryHandler: OpenLayers.Handler.Point,
+            featureManager : "featuremanager",
             toggleGroup: "editionTools"
         },{
         	ptype: 'gxp_addfeaturetomap',
@@ -77,6 +77,7 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             iconCls: 'vw-icon-add-line',            
             geometryTypes : ["Line", "Curve"],
             geometryHandler: OpenLayers.Handler.Path,
+            featureManager : "featuremanager",
             toggleGroup: "editionTools"
         },{
         	ptype: 'gxp_addfeaturetomap',
@@ -86,6 +87,7 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             iconCls: 'vw-icon-add-polygon',             
             geometryTypes : ["Polygon", "Surface"],
             geometryHandler: OpenLayers.Handler.Polygon,
+            featureManager : "featuremanager",
             toggleGroup: "editionTools"
         },{
             ptype: 'gxp_createbuffer',

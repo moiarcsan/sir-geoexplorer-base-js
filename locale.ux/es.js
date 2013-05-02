@@ -151,7 +151,7 @@ GeoExt.Lang.add(
         fieldNameEmptyText: 'Escriba un nombre para el campo (letras, números, . y _)',
     	descriptionTextKML: "Escriba el nombre para la nueva capa y seleccione un archivo KML para subir.",
         descriptionTextXLS1: "Escriba el nombre para la nueva capa y seleccione un archivo XLS para subir.",
-        descriptionTextXLS2: "Seleccione el sistema de referencia y las columnas en las que se almacenan las coordenadas X e Y dentro del fichero.",
+        descriptionTextXLS2: "Seleccione el sistema de referencia y las columnas en las que se almacenan las coordenadas X e Y dentro del fichero."
     },
     
     "Viewer.plugins.XLSWizard.prototype": {
@@ -173,7 +173,7 @@ GeoExt.Lang.add(
         coordinateYLabel: 'Coordenada Y ',
         columsEmpty: '* Las columnas con cabecera vacía no serán importadas.',
         descriptionTextXLS1: "Escriba el nombre para la nueva capa y seleccione un archivo XLS para subir.",
-        descriptionTextXLS2: "Seleccione el sistema de referencia y las columnas en las que se almacenan las coordenadas X e Y dentro del fichero.",
+        descriptionTextXLS2: "Seleccione el sistema de referencia y las columnas en las que se almacenan las coordenadas X e Y dentro del fichero."
     },
 
     "Viewer.plugins.RasterUploadPanel.prototype": {
@@ -514,6 +514,40 @@ GeoExt.Lang.add(
 
     "gxp.plugins.FeatureEditor.propertyEditor.prototype": {
         exceptionTitle: "Fallo al guardar"
+    },
+
+    "Ext.MessageBox" :{
+        buttonText: {
+            yes: "Sí",
+            no: "No",
+            cancel: "Cancelar",
+            ok: "Aceptar"
+        }
+    },
+
+    "Viewer.dialog.NewElementFromCoords.prototype" : {
+        addPointText: "Añadir Punto",
+        geometryLabels : {
+            "Point" : "Introduzca los puntos a añadir a la capa seleccionada:",
+            "Line": "Introduzca los vértices de la línea a añadir a la capa seleccionada:",
+            "Polygon" : "Introduzca los vértices del polígono a añadir a la capa seleccionada:"
+        },
+        latText: "Latitud",
+        lonText: "Longitud",
+        saveTitleText: '¿Guardar cambios en la capa?',
+        saveChangesText: "Guardar cambios",
+        discardChangesText: "Descartar cambios",
+        cancelText: "Cancelar",
+        saveMsgText: 'La capa activa tiene cambios sin guardar, ¿Desea guardarlos ahora?',
+        waitText: "Por favor, espere...",
+        saveErrorText: "Hubo un problema al guardar el nuevo elemento, pruebe de nuevo en unos instantes.",
+        saveSuccessText: "El nuevo elemento se añadió con éxito a la capa.",
+        removeText: "Eliminar"
+    },
+
+    "Viewer.plugins.WMSStylesDialogMod.prototype": {
+        updateDefaultStyleText: 'Guardar',
+        updateDefaultTip: 'Establece el estilo seleccionado como estilo por defecto al visualizar la capa'
     }
 
 });

@@ -496,8 +496,22 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
             },
 
             function(form, action) {
-                if(onFailure) {
-                    Ext.defer(onFailure, 0, eScope);
+                if(!!action
+                    && !!action.response
+                    && action.response.status == 200
+                    && action.response.statusText == 'OK'
+                    && !!action.response.responseText){
+                    /*
+                     * ON SUCCESS
+                     */
+                    var layer = this_.parseLayer(form, action);                
+                    if(onSuccess) {
+                        Ext.defer(onSuccess, 0, eScope, [layer]);
+                    }
+                }else{
+                    if(onFailure) {
+                        Ext.defer(onFailure, 0, eScope);
+                    }
                 }
             });
         } else if ( !! this.SAVE_MODES.USER == this.saveModeActive) {
@@ -617,6 +631,30 @@ PersistenceGeo.Context = Ext.extend(Ext.util.Observable, {
 
 
         return layer;
+    },
+
+    /**
+     * api: method[isOwner]
+     * 
+     * Check if user logged is owner of a layer. 
+     * If the user is valid and admin, this method return always true.
+     */
+    isOwner: function(layer){
+        var isOwner = false; 
+        if(!!this.userInfo 
+            && this.userInfo.valid
+            && this.userInfo.admin){
+            isOwner = true;
+        }else if(this.saveModeActive == this.SAVE_MODES.USER
+            && !! this.userInfo && !! this.userInfo.id){
+            isOwner = layer.layerID && layer.userID && layer.userID = this.userInfo.id;
+        }else if(this.saveModeActive == this.SAVE_MODES.GROUP
+            && !! this.userInfo && !! this.userInfo.id){
+            isOwner = layer.layerID && layer.groupID && layer.groupID = this.userInfo.authorityId;
+        }else if(this.saveModeActive == this.SAVE_MODES.ANONYMOUS){
+            isOwner = layer.layerID && !layer.userID && !layer.groupID;
+        }
+        return isOwner;
     }
 
 });
