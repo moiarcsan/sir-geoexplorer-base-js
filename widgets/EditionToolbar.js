@@ -99,16 +99,16 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             actionTarget: 'editiontbar',
             tooltip: this.tooltipAddNewElement,
             toggleGroup: "editionTools"
-        }, {
-            ptype: 'gxp_adddatacolumn',
-            actionTarget: 'editiontbar',
-            tooltip: this.tooltipAddColumn,
-            toggleGroup: "editionTools"
-        }, {
-            ptype: 'gxp_deletedatacolumn',
-            actionTarget: 'editiontbar',
-            tooltip: this.tooltipDeleteColumn,
-            toggleGroup: "editionTools"
+//        }, {
+//            ptype: 'gxp_adddatacolumn',
+//            actionTarget: 'editiontbar',
+//            tooltip: this.tooltipAddColumn,
+//            toggleGroup: "editionTools"
+//        }, {
+//            ptype: 'gxp_deletedatacolumn',
+//            actionTarget: 'editiontbar',
+//            tooltip: this.tooltipDeleteColumn,
+//            toggleGroup: "editionTools"
         }, { //add new button before. This tool MUST BE THE LAST ALWAYS
             ptype: "vw_featureeditor",
             actionTarget: 'editiontbar',
