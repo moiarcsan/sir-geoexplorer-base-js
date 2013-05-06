@@ -545,6 +545,32 @@ GeoExt.Lang.add(
         removeText: "Eliminar"
     },
 
+    "Viewer.dialog.NewElementFromCoords.prototype" : {
+        windowTitleText: "Aañdir columna a la capa seleccionada.",
+        layerNameEmptyText: "Escriba un nombre para la nueva columna.",
+        buttonNextText: "Guardar",
+        layerNameLabelText: "Nombre de la columna",
+        waitTitleMsgText: "Creando columna",
+        createLayerWaitMsgText: "Creando columna. Por favor espere.",
+        createLayerWaitMsgTitleText: "Creando columna.",
+        fieldNameEmptyText: 'Escriba un nombre para el campo (letras, números, . y _)',
+        columnCreatedTextTitle: "Columna creada.",
+        columnCreatedTextDescription: "La columna se ha creado satisfactoriamente.",
+        columnCreatedErrorTextTitle: "Error",
+        columnCreatedErrorTextDescription: "Ha ocurrido un error creando la columna.",
+        columnCreatedErrorSendingDataText: "Ha ocurrido un error enviando los datos al servidor"
+    },
+
+    "Viewer.dialog.AddDataColumn.prototype" : {
+        columnNameEmptyText: "Introduzca un nombre para la nueva columna a crear en la capa seleccionada.",
+        buttonSaveText: "Guardar",
+        columnNameLabelText: "Nombre de la columna",
+        createColumnWaitMsgText: "Creando columna. Por favor espere.",
+        createColumnWaitMsgTitleText: "Procesando...",
+        fieldNameEmptyText: 'Escriba un nombre para el campo (letras, números, . y _)',
+        descriptionTextColumn: 'Introduzca un nombre para la nueva columna.'
+    }
+
     "Viewer.plugins.WMSStylesDialogMod.prototype": {
         updateDefaultStyleText: 'Guardar',
         updateDefaultTip: 'Establece el estilo seleccionado como estilo por defecto al visualizar la capa'

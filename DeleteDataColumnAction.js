@@ -142,7 +142,9 @@ gxp.plugins.DeleteDataColumnAction = Ext.extend(gxp.plugins.Tool, {
         try {
             disable = layer.metadata.geometries.length == 0;
         } catch(e) {
-            disable = true;
+//          disable = true;
+        	//TODO disable debe ir a true
+        	disabel = false;
         }
 
         for (var i=0, l=this.actions.length; i<l; i++) {
