@@ -92,6 +92,8 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
     exceptionTitle: "Save Failed",
     exceptionText: "Trouble saving features",
 
+    waitText: "Please wait...",
+
     /** private: property[selectionLayer]
      * Here we store the feature layer associated to the selected layer which we
      * will use to select features.
@@ -148,7 +150,7 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
 
                 if(state) {
                     // We handle clicks directly on the map to retrieve the feature.
-                    map.events.register("click", this, this._onMapClicked);
+                    mapCtr.mapPanel.map.events.register("click", this, this._onMapClicked);
 
                     if(!this.selectionLayer) {
                         // We create a new feature layer invisible in to the TOC where we will be adding the retrieved features.
@@ -177,7 +179,7 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
                     this.selectionControl.activate();
                 } else {
 
-                    this.target.mapPanel.map.events.unregister("click", this, this.noFeatureClick);
+                    mapCtr.mapPanel.map.events.unregister("click", this, this.noFeatureClick);
 
                     delete this.selectionLayer;
                     this.selectionLayer = null;
@@ -244,6 +246,9 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
             params.SRS = projection.getCode();
         }
         
+
+        Ext.Msg.wait(this.waitText);
+
         var store = new GeoExt.data.FeatureStore({
             fields: {},
             proxy: new GeoExt.data.ProtocolProxy({
@@ -258,6 +263,10 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
                 "load": function(store, records) {
                     if (records.length > 0) {
                         var fid = records[0].get("fid");
+
+                        Ext.Msg.updateProgress(1);
+                        Ext.Msg.hide();
+
                         alert("Feature on layer clicked: "+fid);
                     }
                 },
