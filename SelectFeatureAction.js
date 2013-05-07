@@ -92,11 +92,13 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
     exceptionTitle: "Save Failed",
     exceptionText: "Trouble saving features",
 
-    /** private: property[featureLayer]
+    waitText: "Please wait...",
+
+    /** private: property[selectionLayer]
      * Here we store the feature layer associated to the selected layer which we
      * will use to select features.
      */
-    featureLayer: null,
+    selectionLayer: null,
 
     /**
      * private: property[styleBackup]
@@ -126,48 +128,18 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
         featureManager.on("layerchange", this._enableOrDisable, this);
         app.on("loginstatechange", this._enableOrDisable,this);
 
-        
-        var featureLayer = featureManager.featureLayer;      
+        var style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+        style.strokeColor = 'red'; 
+        style.fillColor = 'red';
 
-
-        this.control = new OpenLayers.Control.SelectFeature(
-                featureLayer, {  
-                    multiple: true,
-                    renderIntent:"temporary",
-                    eventListeners: {
-                        featurehighlighted: function(event) {
-                            var popup =  new gxp.FeatureEditPopup({
-                                allowDelete:true,
-                                feature: featureManager.featureStore.getByFeature(event.feature),
-                                width: 200,
-                                height: 250,
-                                readOnly: this.readOnly,
-                                collapsible: true,
-                                title: "Propiedades de "+ event.feature.fid
-                            });
-
-                            popup.on({
-                                "close": function(){
-                                    this._onPopupClosed(event.feature)
-                                },
-                                "featuremodified": function(popup, feature){
-                                    this._onFeatureModified(popup, feature);
-                                },
-                                "canceledit": function(popup, feature) {
-                                    featureStore.commitChanges();
-                                },
-                                scope: this
-                            });
-                            this.popup = popup;
-
-                            popup.show();
-                        },
-                        scope: this
-                    }
-                });
-
-        this.control.setMap(Viewer.getMapPanel().map);
-        Viewer.getMapPanel().map.addControl(this.control);
+        // We create a new feature layer invisible in to the TOC where we will be adding the retrieved features.
+        this.selectionLayer =  new OpenLayers.Layer.Vector(
+            "selection layer",{
+               "displayInLayerSwitcher":false,
+                "style": style
+            });
+        Viewer.getMapPanel().map.addLayer(this.selectionLayer);
+     
 
         var actions = gxp.plugins.SelectFeatureAction.superclass.addActions.apply(this, [{
             text: this.showButtonText ? this.buttonText : '',
@@ -183,16 +155,42 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
 
                 // We change the cursor over the map to indicate selection.
                 Ext.select(".olMap").setStyle("cursor", state?"crosshair":"default");
-                Viewer.getController('Map').toggleSelectFeature(state);
+                var mapCtr = Viewer.getController('Map');
+
+                mapCtr.toggleSelectFeature(state);
 
 
                 if(state) {
-                    this._applyStyles();
-                    this.control.initLayer(this.featureLayer);
-                    this.control.activate();
+                    // We handle clicks directly on the map to retrieve the feature.
+                    mapCtr.mapPanel.map.events.register("click", this, this._onMapClicked);
+
+                    // We create a selection control for the temporal layer, so we can deselect features when we click the feature.
+                    this.selectionControl = new OpenLayers.Control.SelectFeature(
+                            this.selectionLayer, {  
+                                renderIntent:"temporary",
+                                eventListeners: {
+                                    featurehighlighted: function(event) {
+                                        // TODO: Remove feature from tmp layer.
+                                        alert("Selected feature clicked: "+event.feature.fid);
+                                    },
+                                    scope: this
+                                }
+                            });
+
+                    this.selectionControl.setMap(Viewer.getMapPanel().map);
+                    Viewer.getMapPanel().map.addControl(this.selectionControl);
+
+                   
+                    this.selectionControl.initLayer(this.selectionLayer);
+                    this.selectionControl.activate();
                 } else {
-                   this._restoreStyles();
-                   this.control.deactivate();
+
+                    mapCtr.mapPanel.map.events.unregister("click", this, this.noFeatureClick);
+
+                    delete this.selectionLayer;
+                    this.selectionLayer = null;
+
+                   this.selectionControl.deactivate();
                 }
 
             },
@@ -206,201 +204,73 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
         return actions;
     },
 
-    _onFeatureModified : function(popup, feature) {
+     /** private: method[_onMapClicked]
+     *  :arg evt: ``Object``
+     */
+    _onMapClicked: function(evt) {
+
         var featureManager = this._getFeatureManager();
-        var featureStore = featureManager.featureStore;
-        featureStore.on({
-            beforewrite: {
-                fn: function(store, action, rs, options) {
-                    if (this.commitMessage === true) {
-                        options.params.handle = this._commitMsg;
-                        delete this._commitMsg;
-                    }
-                },
-                single: true
-            },
-            beforesave: {
-                fn: function() {
-                    if (popup && popup.isVisible()) {
-                        popup.disable();
-                    }
-                    if (this.commitMessage === true) {
-                        if (!this._commitMsg) {
-                            var fn = arguments.callee;
-                            Ext.Msg.show({
-                                prompt: true,
-                                title: this.commitTitle,
-                                msg: this.commitText,
-                                buttons: Ext.Msg.OK,
-                                fn: function(btn, text) {
-                                    if (btn === 'ok') {
-                                        this._commitMsg = text;
-                                        featureStore.un('beforesave', fn, this);
-                                        featureStore.save();
-                                    }
-                                },
-                                scope: this,
-                                multiline: true
-                            });
-                            return false;
-                        }
-                    }
-                },
-                single: this.commitMessage !== true
-            },
-            write: {
-                fn: function() {
-                    if (popup) {
-                        if (popup.isVisible()) {
-                            popup.enable();
-                        }
-                        if (this.closeOnSave) {
-                            popup.close();
-                        }
-                    }
-                    var layer = featureManager.layerRecord;
-                    this.target.fireEvent("featureedit", featureManager, {
-                        name: layer.get("name"),
-                        source: layer.get("source")
-                    });
-                },
-                single: true
-            },
-            exception: {
-                fn: function(proxy, type, action, options, response, records) {
-                    var msg = this.exceptionText;
-                    if (type === "remote") {
-                        // response is service exception
-                        if (response.exceptionReport) {
-                            msg = gxp.util.getOGCExceptionText(response.exceptionReport);
-                        }
-                    } else {
-                        // non-200 response from server
-                        msg = "Status: " + response.status;
-                    }
-                    // fire an event on the feature manager
-                    featureManager.fireEvent("exception", featureManager, 
-                        response.exceptionReport || {}, msg, records);
-                    // only show dialog if there is no listener registered
-                    if (featureManager.hasListener("exception") === false && 
-                        featureStore.hasListener("exception") === false) {
-                            Ext.Msg.show({
-                                title: this.exceptionTitle,
-                                msg: msg,
-                                icon: Ext.MessageBox.ERROR,
-                                buttons: {ok: true}
-                            });
-                    }
-                    if (popup && popup.isVisible()) {
-                        popup.enable();
-                        popup.startEditing();
-                    }
-                },
-                single: true
-            },
-            scope: this
-        });                                
-        if(feature.state === OpenLayers.State.DELETE) {
-            /**
-             * If the feature state is delete, we need to
-             * remove it from the store (so it is collected
-             * in the store.removed list.  However, it should
-             * not be removed from the layer.  Until
-             * http://trac.geoext.org/ticket/141 is addressed
-             * we need to stop the store from removing the
-             * feature from the layer.
-             */
-            featureStore._removing = true; // TODO: remove after http://trac.geoext.org/ticket/141
-            featureStore.remove(featureStore.getRecordFromFeature(feature));
-            delete featureStore._removing; // TODO: remove after http://trac.geoext.org/ticket/141
+        var evtLL = this.target.mapPanel.map.getLonLatFromPixel(evt.xy);
+        
+        var page = featureManager.page;
+        var layer = featureManager.layerRecord && featureManager.layerRecord.getLayer();
+        if (!layer) {
+            // if the feature manager has no layer currently set, do nothing
+            return;
         }
-        featureStore.save();
-    },
-
-    _onPopupClosed: function(feature) {
-        if (this.readOnly === false) {
-            this.control.activate();
-        }
-        if(feature.layer && feature.layer.selectedFeatures.indexOf(feature) !== -1) {
-            //this.control.unselect(feature);
-        }
-    },
-
-    _applyStyles : function() {
-        this.styleBackup = this.featureLayer.styleMap;
-        this.featureLayer.styleMap= new OpenLayers.StyleMap({
-            styles:{
-                default : {
-                    defaultStyle: {
-                        cursor: "inherit",
-                        fillColor: "#ee9900",
-                        fillOpacity: 0.4,
-                        fontColor: "#000000",
-                        hoverFillColor: "white",
-                        hoverFillOpacity: 0.8,
-                        hoverPointRadius: 1,
-                        hoverPointUnit: "%",
-                        hoverStrokeColor: "red",
-                        hoverStrokeOpacity: 1,
-                        hoverStrokeWidth: 0.2,
-                        labelAlign: "cm",
-                        labelOutlineColor: "white",
-                        labelOutlineWidth: 3,
-                        pointRadius: 6,
-                        pointerEvents: "visiblePainted",
-                        strokeColor: "#ee9900",
-                        strokeDashstyle: "solid",
-                        strokeLinecap: "round",
-                        strokeOpacity: 1,
-                        strokeWidth: "2"
-                    }
-                },
-                delete : {
-                    defaultStyle: {
-                        display: "none"
-                    }
-                },
-                select : {
-                    defaultStyle: {
-                       cursor: "pointer",
-                        fillColor: "blue",
-                        fillOpacity: 0.4,
-                        fontColor: "#000000",
-                        hoverFillColor: "white",
-                        hoverFillOpacity: 0.8,
-                        hoverPointRadius: 1,
-                        hoverPointUnit: "%",
-                        hoverStrokeColor: "red",
-                        hoverStrokeOpacity: 1,
-                        hoverStrokeWidth: 0.2,
-                        labelAlign: "cm",
-                        labelOutlineColor: "white",
-                        labelOutlineWidth: 3,
-                        pointRadius: 6,
-                        pointerEvents: "visiblePainted",
-                        strokeColor: "blue",
-                        strokeDashstyle: "solid",
-                        strokeLinecap: "round",
-                        strokeOpacity: 1,
-                        strokeWidth: 2
-                    }
-                }
+        
+        // construct params for GetFeatureInfo request
+        // layer is not added to map, so we do this manually
+        var map = this.target.mapPanel.map;
+        var size = map.getSize();
+        var params = Ext.applyIf({
+            REQUEST: "GetFeatureInfo",
+            BBOX: map.getExtent().toBBOX(),
+            WIDTH: size.w,
+            HEIGHT: size.h,
+            X: parseInt(evt.xy.x),
+            Y: parseInt(evt.xy.y),
+            QUERY_LAYERS: layer.params.LAYERS,
+            INFO_FORMAT: "application/vnd.ogc.gml",
+            EXCEPTIONS: "application/vnd.ogc.se_xml",
+            FEATURE_COUNT: 1,
+            SRSNAME: map.projection
+        }, layer.params);
+        
+        if (typeof this.tolerance === "number") {
+            for (var i=0, ii=this.toleranceParameters.length; i<ii; ++i) {
+                params[this.toleranceParameters[i]] = this.tolerance;
             }
-          
-
-        });
-        this.featureLayer.redraw();
-    },
-
-    _restoreStyles : function() {
-        if(this.styleBackup){
-            this.featureLayer.styleMap= this.styleBackup;
-            this.featureLayer.redraw();   
         }
-         
+
+        Ext.Msg.wait(this.waitText);
+
+        var store = new GeoExt.data.FeatureStore({
+            fields: {},
+            proxy: new GeoExt.data.ProtocolProxy({
+                protocol: new OpenLayers.Protocol.HTTP({
+                    url: (typeof layer.url === "string") ? layer.url : layer.url[0],
+                    params: params,
+                    format: new OpenLayers.Format.WMSGetFeatureInfo()
+                })
+            }),
+            autoLoad: true,
+            listeners: {
+                "load": function(store, records) {
+                    if (records.length > 0) {
+                        Ext.Msg.updateProgress(1);
+                        Ext.Msg.hide();
+
+                        this.selectionLayer.addFeatures(records[0].data.feature);
+                    }
+                },
+                scope: this
+            }
+        });
     },
 
-   
+    
+
 
       /** private: method[_enableOrDisable]
      */
@@ -440,29 +310,14 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
         // Comprobamos si el usuario tiene permisos en la capa
         if(layer && (isTemporal || layerId && (isAdmin || !!authIdUser && authIdLayer == authIdUser))){
 
-            this.featureLayer = mgr.featureLayer;
-
-            
-            if(this.control.active){
-                this._applyStyles();  
-            }
-             this.control.initLayer(this.featureLayer);
             this.actions[0].enable();
         }else{
             // Disable the edit options
             this.actions[0].disable();
-
-            var ds = Viewer.getComponent('NewElementFromCoords');
-            if(ds && ds.isVisible()) {
-                ds.hide();
-            }
         }
     },
 
      /** private: method[_getFeatureManager]
-     *  :arg mgr: :class:`gxp.plugins.FeatureManager`
-     *  :arg layer: ``GeoExt.data.LayerRecord``
-     *  :arg schema: ``GeoExt.data.AttributeStore``
      */
     _getFeatureManager: function() {
         var  manager = window.app.tools[this.featureManager];
