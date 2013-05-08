@@ -93,6 +93,7 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
     exceptionText: "Trouble saving features",
 
     waitText: "Please wait...",
+    errorText: "There was an error. Please try again.",
 
     /** private: property[selectionLayer]
      * Here we store the feature layer associated to the selected layer which we
@@ -126,11 +127,17 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
     addActions: function() {
         var featureManager = this._getFeatureManager();
         featureManager.on("layerchange", this._enableOrDisable, this);
-        app.on("loginstatechange", this._enableOrDisable,this);
+        window.app.on({
+            layerselectionchange: this._enableOrDisable,
+            loginstatechange: this._enableOrDisable,
+            scope: this
+        });
 
         var style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-        style.strokeColor = 'red'; 
-        style.fillColor = 'red';
+        style["pointRadius"]=10;
+        style["display"]="block";
+        style["strokeColor"] = 'red'; 
+        style["fillColor"] = 'red';
 
         // We create a new feature layer invisible in to the TOC where we will be adding the retrieved features.
         this.selectionLayer =  new OpenLayers.Layer.Vector(
@@ -139,6 +146,22 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
                 "style": style
             });
         Viewer.getMapPanel().map.addLayer(this.selectionLayer);
+
+
+        // We create a selection control for the temporal layer, so we can deselect features when we click the feature.
+        this.selectionControl = new OpenLayers.Control.SelectFeature(
+                this.selectionLayer, {  
+                    renderIntent:"temporary",
+                    eventListeners: {
+                        featurehighlighted: function(event) {
+                              this.selectionLayer.removeFeatures(event.feature);
+                        },
+                        scope: this
+                    }
+                });
+
+        this.selectionControl.setMap(Viewer.getMapPanel().map);
+        Viewer.getMapPanel().map.addControl(this.selectionControl);
      
 
         var actions = gxp.plugins.SelectFeatureAction.superclass.addActions.apply(this, [{
@@ -159,37 +182,19 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
 
                 mapCtr.toggleSelectFeature(state);
 
+                // We clean the selection layer every time we deactivate, activate or reactivate the tool.
+                this.selectionLayer.removeAllFeatures();
+
 
                 if(state) {
                     // We handle clicks directly on the map to retrieve the feature.
                     mapCtr.mapPanel.map.events.register("click", this, this._onMapClicked);
 
-                    // We create a selection control for the temporal layer, so we can deselect features when we click the feature.
-                    this.selectionControl = new OpenLayers.Control.SelectFeature(
-                            this.selectionLayer, {  
-                                renderIntent:"temporary",
-                                eventListeners: {
-                                    featurehighlighted: function(event) {
-                                        // TODO: Remove feature from tmp layer.
-                                        alert("Selected feature clicked: "+event.feature.fid);
-                                    },
-                                    scope: this
-                                }
-                            });
-
-                    this.selectionControl.setMap(Viewer.getMapPanel().map);
-                    Viewer.getMapPanel().map.addControl(this.selectionControl);
-
                    
                     this.selectionControl.initLayer(this.selectionLayer);
                     this.selectionControl.activate();
                 } else {
-
                     mapCtr.mapPanel.map.events.unregister("click", this, this.noFeatureClick);
-
-                    delete this.selectionLayer;
-                    this.selectionLayer = null;
-
                    this.selectionControl.deactivate();
                 }
 
@@ -218,7 +223,13 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
             // if the feature manager has no layer currently set, do nothing
             return;
         }
+
+        //this._getFeature(layer, evt);
         
+        this._getFeatureInfo(featureManager, layer, evt);
+    },
+
+    _getFeatureInfo: function(featureMgr, layer, evt) {
         // construct params for GetFeatureInfo request
         // layer is not added to map, so we do this manually
         var map = this.target.mapPanel.map;
@@ -233,9 +244,19 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
             QUERY_LAYERS: layer.params.LAYERS,
             INFO_FORMAT: "application/vnd.ogc.gml",
             EXCEPTIONS: "application/vnd.ogc.se_xml",
-            FEATURE_COUNT: 1,
-            SRSNAME: map.projection
+            FEATURE_COUNT: 1
         }, layer.params);
+
+        var projection = map.getProjectionObject();
+        var layerProj = layer.projection;
+        if (layerProj && layerProj.equals(projection)) {
+            projection = layerProj;
+        }
+        if (parseFloat(layer.params.VERSION) >= 1.3) {
+            params.CRS = projection.getCode();
+        } else {
+            params.SRS = projection.getCode();
+        }
         
         if (typeof this.tolerance === "number") {
             for (var i=0, ii=this.toleranceParameters.length; i<ii; ++i) {
@@ -243,7 +264,7 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
             }
         }
 
-        Ext.Msg.wait(this.waitText);
+        //Ext.Msg.wait(this.waitText);
 
         var store = new GeoExt.data.FeatureStore({
             fields: {},
@@ -257,11 +278,30 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
             autoLoad: true,
             listeners: {
                 "load": function(store, records) {
+                      // Ext.Msg.updateProgress(1);
+                      //   Ext.Msg.hide();
                     if (records.length > 0) {
-                        Ext.Msg.updateProgress(1);
-                        Ext.Msg.hide();
+                      
+                        var fid = records[0].get("fid");
 
-                        this.selectionLayer.addFeatures(records[0].data.feature);
+                        var existingFeature = this.selectionLayer.getFeatureByFid(fid);
+                        if(existingFeature) {
+                            this.selectionLayer.removeFeatures(existingFeature);
+                            return;
+                        }
+
+                        var filter = new OpenLayers.Filter.FeatureId({
+                            fids: [fid] 
+                        });
+
+
+                         featureMgr.loadFeatures(
+                                filter, function(features) {
+                                    if (features.length) {
+                                        this.autoLoadedFeature = features[0];
+                                        this.selectionLayer.addFeatures(features[0]);
+                                    }
+                                }, this);
                     }
                 },
                 scope: this
@@ -269,10 +309,7 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
         });
     },
 
-    
-
-
-      /** private: method[_enableOrDisable]
+    /** private: method[_enableOrDisable]
      */
      _enableOrDisable : function() {
         var mgr = this._getFeatureManager();
@@ -286,7 +323,7 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
         var isTemporal = null;
         var layer = null;
         // Institución de la capa
-        if(!!layerRecord && !!layerRecord.data && !!layerRecord.data.layer){
+        if(!!layerRecord && !!layerRecord.data && !!layerRecord.data.layer && !!layerRecord.data.layer.params){
             layer = layerRecord.data.layer;
             if(layer.authId){
                 authIdLayer = layer.authId;
@@ -307,15 +344,19 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
             authIdUser = app.persistenceGeoContext.userInfo.authorityId;
             isAdmin = app.persistenceGeoContext.userInfo.admin
         }
-        // Comprobamos si el usuario tiene permisos en la capa
-        if(layer && (isTemporal || layerId && (isAdmin || !!authIdUser && authIdLayer == authIdUser))){
 
+        this.selectionLayer.removeAllFeatures();
+        // Comprobamos si el usuario tiene permisos en la capa
+        if(layer && (isTemporal || layerId && (isAdmin || !!authIdUser && authIdLayer == authIdUser))) {
             this.actions[0].enable();
         }else{
             // Disable the edit options
             this.actions[0].disable();
         }
     },
+
+
+   
 
      /** private: method[_getFeatureManager]
      */
