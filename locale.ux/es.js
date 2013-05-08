@@ -568,8 +568,24 @@ GeoExt.Lang.add(
         createColumnWaitMsgText: "Creando columna. Por favor espere.",
         createColumnWaitMsgTitleText: "Procesando...",
         fieldNameEmptyText: 'Escriba un nombre para el campo (letras, números, . y _)',
-        descriptionTextColumn: 'Introduzca un nombre para la nueva columna.'
-    }
+        descriptionTextColumn: 'Introduzca un nombre para la nueva columna.',
+        columnTypeEmpty: "Introduzca tipo de dato",
+        columnTypeLabel: "Tipo de dato",
+        typeString: "String",
+        typeNumber: "Number",
+        typeDate: "Date",
+        newColumnTitle: "Nueva volumna"
+    },
+
+    "Viewer.dialog.DeleteDataColumn.prototype" : {
+        descriptionTextColumn: "Seleccione las columnas que desea eliminar y pulse el botón Guardar.",
+        columnNameLabelText: "Columnas disponibles",
+        deleteColumnWaitMsgText: "Eliminar columnas.",
+        loadingDataText: "Cargando datos. Por favor espere.",
+        deleteColumnWaitMsgTitleText: "Procesando...",
+        deleteColumnTitle: "Eliminar columnas.",
+        buttonSaveText: "Guardar"
+    },
 
     "Viewer.plugins.WMSStylesDialogMod.prototype": {
         updateDefaultStyleText: 'Guardar',
