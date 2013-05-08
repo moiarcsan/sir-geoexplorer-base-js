@@ -548,6 +548,35 @@ GeoExt.Lang.add(
     "Viewer.plugins.WMSStylesDialogMod.prototype": {
         updateDefaultStyleText: 'Guardar',
         updateDefaultTip: 'Establece el estilo seleccionado como estilo por defecto al visualizar la capa'
+    },
+
+    "gxp.FilterBuilder.prototype": {
+         addConditionText: "Añadir condición",
+        addGroupText: "Añadir grupo",
+        removeConditionText: "Quitar condición",
+        postComboText: "las condiciones:"
+    },
+
+    "gxp.form.ComparisonComboBox.prototype" : {
+        allowedTypes: [
+            [OpenLayers.Filter.Comparison.EQUAL_TO, "igual a"],
+            [OpenLayers.Filter.Comparison.NOT_EQUAL_TO, "distinto a"],
+            [OpenLayers.Filter.Comparison.LESS_THAN, "menor que"],
+            [OpenLayers.Filter.Comparison.GREATER_THAN, "mayor que"],
+            [OpenLayers.Filter.Comparison.LESS_THAN_OR_EQUAL_TO, "menor o igual que"],
+            [OpenLayers.Filter.Comparison.GREATER_THAN_OR_EQUAL_TO, "mayor o igual que"],
+            [OpenLayers.Filter.Comparison.LIKE, "similar a "],
+            [OpenLayers.Filter.Comparison.BETWEEN, "entre"]
+        ]
+    },
+
+    "Viewer.widgets.QueryForm.prototype" : {
+        resultCountText: "Se encontraron {0} resultados."
+    },
+
+    "gxp.plugins.SelectFeatureAction.prototype" : {
+        waitText: "Por favor espere...",
+        errorText: "Ocurrió un error, inténtelo de nuevo en unos instantes.",
     }
 
 });
