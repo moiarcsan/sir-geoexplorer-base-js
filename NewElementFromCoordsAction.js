@@ -100,6 +100,13 @@ gxp.plugins.NewElementFromCoordsAction = Ext.extend(gxp.plugins.Tool, {
      */
     addActions: function() {
 
+        var selectedLayer = Viewer.getController('Layers').getSelectedLayer();
+        var disable = true;
+        try {
+            disable = selectedLayer.metadata.geometries.length == 0;
+        } catch(e) {
+        }
+
         this.actions =  gxp.plugins.NewElementFromCoordsAction.superclass.addActions.apply(this, [{
             text: this.showButtonText ? this.buttonText : '',
             menuText: this.menuText,
