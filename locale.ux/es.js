@@ -405,7 +405,11 @@ GeoExt.Lang.add(
     	/* Crear bufer */
     	tooltipAddBuffer: "Permite crear un bufer sobre un elemente del mapa",
     	/* Crear nuevo elemento */
-        tooltipAddNewElement: "Permite crear un nuevo elemento sobre una capa"
+        tooltipAddNewElement: "Permite crear un nuevo elemento sobre una capa",
+        /* Añadir columna a la capa seleccionada */
+        tooltipAddColumn: "Añadir columna a la capa seleccionada.",
+        /* Eliminar columna de la capa seleccionada */
+        tooltipDeleteColumn: "Eliminar columna de la capa seleccionada.",
     },
     /** Barra de herramientas de exportaci\u00f3n **/
     "Viewer.widgets.ImportExportToolbar.prototype": {

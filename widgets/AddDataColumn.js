@@ -231,6 +231,19 @@ Viewer.dialog.AddDataColumn = Ext.extend(Ext.Window, {
                         displayField: "column", 
                         valueField: "column", 
                         fieldLabel: this.columnTypeLabel
+                    }, 
+                    {
+                        xtype: 'textfield',
+                        hidden: true,
+                        id: 'layerSelectedId',
+                        value: '0'
+                    }
+                    , 
+                    {
+                        xtype: 'textfield',
+                        hidden: true,
+                        id: 'layerSelectedTemporal',
+                        value: 'false'
                     }
                 ]
 			},{
@@ -258,7 +271,19 @@ Viewer.dialog.AddDataColumn = Ext.extend(Ext.Window, {
     },
 
     addColumnCall: function() {
+
         var fp = Ext.ComponentMgr.get('addColumnForm');
+
+        if(app.tools["featuremanager"].layerRecord.data.layer.metadata.temporal) {
+
+            fp.getForm().findField('layerSelectedTemporal').setValue('true');
+            fp.getForm().findField('layerSelectedId').setValue(app.tools["featuremanager"].layerRecord.data.layer.metadata.layerResourceId);
+        } else {
+
+            fp.getForm().findField('layerSelectedTemporal').setValue('false');
+            fp.getForm().findField('layerSelectedId').setValue(app.tools["featuremanager"].layerRecord.data.layer.layerID);
+        }
+
         if (fp.getForm().isValid()) {
             fp.getForm().submit({
                 scope: this,
@@ -266,33 +291,15 @@ Viewer.dialog.AddDataColumn = Ext.extend(Ext.Window, {
                 waitMsg: this.createColumnWaitMsgTitleText,
                 waitTitle: this.createColumnWaitMsgText,
                 success: function(fp, o) {
-                    /*var resp = Ext.util.JSON.decode(o.response.responseText);
-                    if (resp && resp.success && resp.data && resp.data.status==="success") {
-                        //Add layer to map and close window
-                        var layerName = resp.data.layerName;
-                        var layerTitle = resp.data.layerTitle;
-                        var geoserverUrl = (resp.data.serverUrl) || (app.sources.local.url + "/wms");
-                        var layer = new OpenLayers.Layer.WMS(layerTitle,
-                                geoserverUrl,
-                            {
-                                layers: layerName,
-                                transparent: true                         
-                            }, {
-                                opacity: 1,
-                                visibility: true                                                
-                            });
-                        layer.metadata.layerResourceId = resp.data.layerResourceId;
-                        layer.metadata.layerTypeId = resp.data.layerTypeId;
-                        layer.metadata.temporal = true;
-                        Viewer.getMapPanel().map.addLayer(layer);
-                        this.close();
-                        Ext.Msg.alert('Capa creada', "La capa se ha creado de forma temporal");
-                    } else if(resp && resp.success && resp.data && resp.data.status === "error") {
+                    var resp = Ext.util.JSON.decode(o.response.responseText);
+                    if(resp && resp.success && resp.data && resp.data.status === "error") {
                         Ext.Msg.alert('Error', resp.data.message);
-                    } else {
-                        Ext.Msg.alert('Error', "Se ha producido un error creando la capa.");
-                    }*/
-                    alert("SUCCESS");
+                    } else if (resp && resp.success) {
+                        this.close();
+                        Ext.Msg.alert('Columna creada', "La columna se ha creado correctamente.");
+                    }  else {
+                        Ext.Msg.alert('Error', "Se ha producido un error creando la columna.");
+                    }
                     
                 }, 
                 failure: function(form, action) {

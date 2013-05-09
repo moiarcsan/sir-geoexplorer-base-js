@@ -23,7 +23,7 @@
  * however invalidate any other reasons why the executable file might be covered
  * by the GNU General Public License.
  *
- * Author: Antonio J. Rodríguez <ajrodriguez@emergya.com>
+ * Author: Antonio Hernández <ahernandez@emergya.com>
  */
 
 
@@ -33,7 +33,7 @@
 
 /** api: (define)
  *  module = gxp.plugins
- *  class = NewElementFromCoordsAction
+ *  class = AddDataColumnAction
  */
 
 /** api: (extends)
@@ -42,7 +42,7 @@
 Ext.namespace("gxp.plugins");
 
 /** api: constructor
- *  .. class:: NewElementFromCoordsAction(config)
+ *  .. class:: AddDataColumnAction(config)
  *
  *    Provides an action for showing the default search dialog.
  */
@@ -54,13 +54,13 @@ gxp.plugins.AddDataColumnAction = Ext.extend(gxp.plugins.Tool, {
     /** api: config[buttonText]
      *  ``String`` Text to show next to the zoom button
      */
-    buttonText: 'Nueva columna',
+    buttonText: 'Nuevo elemento',
      
     /** api: config[menuText]
      *  ``String``
      *  Text for zoom menu item (i18n).
      */
-    menuText: 'Nueva columna',
+    menuText: 'Nuevo elemento',
 
     /** api: config[tooltip]
      *  ``String``
@@ -75,7 +75,10 @@ gxp.plugins.AddDataColumnAction = Ext.extend(gxp.plugins.Tool, {
     
     /** private: property[iconCls]
      */
-    iconCls: 'vw-icon-new-item-from-coords',
+    iconCls: 'vw-icon-new-column',
+
+    /** public; public[toggleGroup]*/
+    toggleGroup : null,
  
     /** private: method[constructor]
      */
@@ -105,6 +108,10 @@ gxp.plugins.AddDataColumnAction = Ext.extend(gxp.plugins.Tool, {
             menuText: this.menuText,
             iconCls: this.iconCls,
             tooltip: this.tooltip,
+            enableToggle: true,
+            allowDepress: true,           
+            toggleGroup: this.toggleGroup,
+            deactivateOnDisable: true,
              handler: function(action, evt) {
 
                 var ds = Viewer.getComponent('AddDataColumn');
@@ -116,12 +123,28 @@ gxp.plugins.AddDataColumnAction = Ext.extend(gxp.plugins.Tool, {
                         action: this
                     });
                     Viewer.registerComponent('AddDataColumn', ds);
+                    ds.on("hide", function() {
+                        // We deactivate the tool if we close the window.
+                        if(this.actions[0].items[0].pressed){
+                            this.actions[0].items[0].toggle();    
+                        }
+                    },this);
                 }
-                if (ds.isVisible()) {
-                    ds.hide();
-                } else {
+                if (action.pressed) {                    
                     ds.show();
+                } else {
+                    ds.hide();
                 }
+            },
+             listeners : {
+                toggle: function(button, pressed) {
+                    var ds = Viewer.getComponent('AddDataColumn');
+                    if (!pressed && ds) {
+                        ds.close();
+                        Viewer.unregisterComponent('AddDataColumn');
+                    } 
+                },
+                scope: this
             },
             scope: this
             

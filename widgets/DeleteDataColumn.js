@@ -88,8 +88,7 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
             width: 380,
             height: 250,
             closeAction: 'hide',
-            layout: 'fit',
-            hidden: true
+            layout: 'fit'
         }, config));
 
         this.layerController.on({
@@ -161,6 +160,7 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
                 type: 'vbox',
                 align: 'stretch'
             },
+            height: 400,
             items: [{
                 xtype: 'form',
                 id: 'loadData',
@@ -176,6 +176,19 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
                     xtype: 'label',
                     cls: 'toolDescription',
                     text: this.loadingDataText
+                },
+                {
+                    xtype: 'textfield',
+                    hidden: true,
+                    id: 'layerSelectedId',
+                    value: '0'
+                }
+                , 
+                {
+                    xtype: 'textfield',
+                    hidden: true,
+                    id: 'layerSelectedTemporal',
+                    value: 'false'
                 }]
             }]
         };
@@ -188,7 +201,19 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
     },
 
     loadDataColumns: function () {
+
         var fp = Ext.ComponentMgr.get('loadData');
+
+        if(app.tools["featuremanager"].layerRecord.data.layer.metadata.temporal) {
+
+            fp.getForm().findField('layerSelectedTemporal').setValue('true');
+            fp.getForm().findField('layerSelectedId').setValue(app.tools["featuremanager"].layerRecord.data.layer.metadata.layerResourceId);
+        } else {
+
+            fp.getForm().findField('layerSelectedTemporal').setValue('false');
+            fp.getForm().findField('layerSelectedId').setValue(app.tools["featuremanager"].layerRecord.data.layer.layerID);
+        }
+
         Ext.getBody().setStyle("cursor", "wait");
         fp.getForm().submit({
             scope: this,
@@ -202,6 +227,8 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
                     Ext.Msg.alert('Error', "Se ha producido un error al recuperar las columnas disponibles.");
                     return false;
                 }
+
+                this.columnNamesCheckBoxes = [];
 
                 var names = resp.data.columnNames;
                 for (i = 0; i < names.length; i++){
@@ -219,20 +246,22 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
                         type: 'vbox',
                         align: 'stretch'
                     },
+                    height: 400,
                     bbar: [
                         
                             '->', // greedy spacer so that the buttons are aligned to each side
                         {
                             id: 'move-next',
                             text: this.buttonSaveText,
-                            handler: this.deleteColumnCall.createDelegate()
+                            handler: this.deleteColumnCall.createDelegate(this)
                         }
                     ],
                     items: [{
                         xtype: 'form',
                         id: 'deleteColumnsForm',
                         frame: true,
-                        autoHeight: true,
+                        autoHeight: false,
+                        anchor: '100%',
                         labelWidth: 100,
                         defaults: {
                             anchor: '90%',
@@ -251,7 +280,9 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
                                 fieldLabel: this.columnNameLabelText,
                                 columns: 1,
                                 vertical: true,
-                                items: this.columnNamesCheckBoxes
+                                items: this.columnNamesCheckBoxes,
+                                height: 125,
+                                style:"overflow-y: auto;"
                             },
                             {
                                 xtype: 'textfield',
@@ -261,7 +292,8 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
                         ]
                     },{
                         xtype: 'form',
-                        autoHeight: true,
+                        autoHeight: false,
+                        anchor: '100%',
                         frame: true,
                         labelWidth: 100,                    
                         defaults: {
@@ -312,35 +344,20 @@ Viewer.dialog.DeleteDataColumn = Ext.extend(Ext.Window, {
                 waitTitle: this.deleteColumnWaitMsgText,
                 success: function(fp, o) {
                     var resp = Ext.util.JSON.decode(o.response.responseText);
-                    if (resp && resp.success) {
-                        //Add layer to map and close window
-                        /*var layerName = resp.data.layerName;
-                        var layerTitle = resp.data.layerTitle;
-                        var geoserverUrl = (resp.data.serverUrl) || (app.sources.local.url + "/wms");
-                        var layer = new OpenLayers.Layer.WMS(layerTitle,
-                                geoserverUrl,
-                            {
-                                layers: layerName,
-                                transparent: true                         
-                            }, {
-                                opacity: 1,
-                                visibility: true                                                
-                            });
-                        layer.metadata.layerResourceId = resp.data.layerResourceId;
-                        layer.metadata.layerTypeId = resp.data.layerTypeId;
-                        layer.metadata.temporal = true;
-                        Viewer.getMapPanel().map.addLayer(layer);*/
+                    if(resp && resp.success && resp.data && resp.data.status === "error") {
+                        Ext.Msg.alert('Error', resp.data.message);
+                    } else if (resp && resp.success) {
                         this.close();
                         Ext.Msg.alert('Columnas eliminadas', "Las columnas se han eliminado correctamente");
-                    } else if(resp && resp.success && resp.data && resp.data.status === "error") {
-                        Ext.Msg.alert('Error', resp.data.message);
                     } else {
                         Ext.Msg.alert('Error', "Se ha producido un error eliminando las columnas.");
                     }
                 }, 
                 failure: function(form, action) {
                     Ext.Msg.alert('Error', "Se ha producido un error al enviar los datos al servidor");
-                }
+                },
+
+                scope: this
             });
         } else {
             Ext.Msg.alert('Error', "Debe seleccionar al menos un elemento a eliminar.");

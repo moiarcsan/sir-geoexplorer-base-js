@@ -23,7 +23,7 @@
  * however invalidate any other reasons why the executable file might be covered
  * by the GNU General Public License.
  *
- * Author: Antonio José Rodríguez <ajrodriguez@emergya.com>
+ * Author: Antonio Hernández <ahernandez@emergya.com>
  */
 
 
@@ -33,7 +33,7 @@
 
 /** api: (define)
  *  module = gxp.plugins
- *  class = NewElementFromCoordsAction
+ *  class = DeleteDataColumnAction
  */
 
 /** api: (extends)
@@ -42,13 +42,13 @@
 Ext.namespace("gxp.plugins");
 
 /** api: constructor
- *  .. class:: DeleteColumnsAction(config)
+ *  .. class:: DeleteDataColumnAction(config)
  *
  *    Provides an action for showing the default search dialog.
  */
 gxp.plugins.DeleteDataColumnAction = Ext.extend(gxp.plugins.Tool, {
     
-    /** api: ptype = gxp_deletedatacolumn */
+    /** api: ptype = gxp_extendedtoolbar */
     ptype: "gxp_deletedatacolumn",
     
     /** api: config[buttonText]
@@ -75,8 +75,11 @@ gxp.plugins.DeleteDataColumnAction = Ext.extend(gxp.plugins.Tool, {
     
     /** private: property[iconCls]
      */
-    iconCls: 'vw-icon-new-item-from-coords',
-    
+    iconCls: 'vw-icon-delete-column',
+
+    /** public; public[toggleGroup]*/
+    toggleGroup : null,
+ 
     /** private: method[constructor]
      */
     constructor: function(config) {
@@ -90,7 +93,7 @@ gxp.plugins.DeleteDataColumnAction = Ext.extend(gxp.plugins.Tool, {
         gxp.plugins.DeleteDataColumnAction.superclass.init.apply(this, arguments);
         this.target.on('beforerender', this.addActions, this);
         window.app.on({
-            layerselectionchange: this.onLayerSelected,
+            layerselectionchange: this._enableOrDisable,
             loginstatechange: this._enableOrDisable,
             scope: this
         });
@@ -100,31 +103,51 @@ gxp.plugins.DeleteDataColumnAction = Ext.extend(gxp.plugins.Tool, {
      */
     addActions: function() {
 
-        this.actions = gxp.plugins.DeleteDataColumnAction.superclass.addActions.apply(this, [{
+        this.actions =  gxp.plugins.DeleteDataColumnAction.superclass.addActions.apply(this, [{
             text: this.showButtonText ? this.buttonText : '',
             menuText: this.menuText,
             iconCls: this.iconCls,
             tooltip: this.tooltip,
-            disabled: disable,
-            handler: function(action, evt) {
+            enableToggle: true,
+            allowDepress: true,           
+            toggleGroup: this.toggleGroup,
+            deactivateOnDisable: true,
+             handler: function(action, evt) {
 
                 var ds = Viewer.getComponent('DeleteDataColumn');
-                if (ds === undefined) {
+               if (ds === undefined) {
                     var mapPanel = Viewer.getMapPanel();
                     ds = new Viewer.dialog.DeleteDataColumn({
                         mapPanel: mapPanel,
                         map: mapPanel.map,
-                        activeLayer: Viewer.getController('Layers').getSelectedLayer()
+                        action: this
                     });
                     Viewer.registerComponent('DeleteDataColumn', ds);
+                    ds.on("hide", function() {
+                        // We deactivate the tool if we close the window.
+                        if(this.actions[0].items[0].pressed){
+                            this.actions[0].items[0].toggle();    
+                        }
+                    },this);
                 }
-                if (ds.isVisible()) {
-                    ds.hide();
-                } else {
+                if (action.pressed) {                    
                     ds.show();
+                } else {
+                    ds.hide();
                 }
             },
+             listeners : {
+                toggle: function(button, pressed) {
+                    var ds = Viewer.getComponent('DeleteDataColumn');
+                    if (!pressed && ds) {
+                        ds.close();
+                        Viewer.unregisterComponent('DeleteDataColumn');
+                    } 
+                },
+                scope: this
+            },
             scope: this
+            
         }]);
 
         this._enableOrDisable();
@@ -132,30 +155,8 @@ gxp.plugins.DeleteDataColumnAction = Ext.extend(gxp.plugins.Tool, {
         return this.actions;
     },
 
-    onLayerSelected: function(layerRecord) {
 
-        var layer;
-        try {
-            layer = layerRecord.getLayer();
-        } catch (e) {
-            return;
-        }
-
-        var disable;
-        try {
-            disable = layer.metadata.geometries.length == 0;
-        } catch(e) {
-//          disable = true;
-        	//TODO disable debe ir a true
-        	disabel = false;
-        }
-
-        for (var i=0, l=this.actions.length; i<l; i++) {
-            this.actions[i].setDisabled(disable);
-        }
-    },
-
-        /** private: method[getFeatureManager]
+    /** private: method[getFeatureManager]
      *  :returns: :class:`gxp.plugins.FeatureManager`
      */
      _enableOrDisable : function() {
