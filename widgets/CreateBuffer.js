@@ -208,6 +208,7 @@ Viewer.dialog.CreateBuffer = Ext.extend(Ext.Window, {
 
         var self = this;
 
+        // This is needed so the workspace is sent to geoserver and the feature type is recognized.
         protocol.format.namespaces["feature"] = prefix;
 
         protocol.commit(
