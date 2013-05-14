@@ -195,15 +195,6 @@ Viewer.plugins.FeatureEditorAction = Ext.extend(gxp.plugins.FeatureEditor, {
                         featureManager.hideLayer(this.id);
                     }
                 },
-                "unhighlight" : function(evt) {
-                    var feature = evt.feature;
-                    if (feature) {
-                        this.fireEvent("featureeditable", this, feature, false);
-                    }
-                    if (feature && feature.geometry && popup && !popup.hidden) {
-                        popup.close();
-                    }
-                },
                 scope: this
             }
         });
