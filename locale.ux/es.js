@@ -600,7 +600,16 @@ GeoExt.Lang.add(
         dontCreateBufferLayerText: "No crear capa",
         bufferLayerCreatedText: "Se creó el buffer en la nueva capa '{0}' con éxito.",
         invalidDistanceText : "La distancia tiene que ser mayor que 0 y menor que 10.000."
+    },
+
+    "gxp.plugins.AddFeatureToMap.prototype" : {    
+        errorText: "Ocurrió un error. Por favor pruebe de nuevo en unos instantes.",
+        waitText: "Por favor, espere..."        
+    },
+
+    "Viewer.plugins.FeatureEditorAction.prototype" : {
+        errorText: "Ocurrió un error. Por favor pruebe de nuevo en unos instantes.",
+        waitText: "Por favor, espere..."        
     }
-  
 
 });
