@@ -36,6 +36,9 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
     tooltipAddPolygon: "Add Polygon to Map",
     tooltipAddBuffer: "Create a new buffer",
     tooltipAddNewElement: "Create a new element",
+    tooltipModifyFeature: "Modify feature",
+    tooltipAddColumn: "Add new Column to selected layer",
+    tooltipDeleteColumn: "Delete column from selected layer",
 
     constructor: function(config) {
 
@@ -45,8 +48,20 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
         this.doAuthorized = window.app.doAuthorized;
         this.isAuthorized = window.app.isAuthorized;
 
-        this.plugins = [{
+        this.plugins = [ {
+            ptype : "vw_featureeditor",
+            modifyOnly : true,
+            tooltip: this.tooltipModifyFeature,
+            featureManager: "featuremanager",
+            actionTarget: 'editiontbar',
+            toggleGroup : "globalToggle",
+            supportAbstractGeometry: true,
+            supportNoGeometry: true,
+            autoLoadFeature: true,
+            showSelectedOnly : true
+        },{
             ptype: 'gxp_selectfeature',
+            id: "featureselector",
             actionTarget: 'editiontbar',
             tooltip: this.tooltipSelectFeature,
             toggleGroup: "globalToggle",
@@ -93,27 +108,27 @@ Viewer.widgets.EditionToolbar = Ext.extend(Ext.Toolbar, {
             ptype: 'gxp_createbuffer',
             actionTarget: 'editiontbar',
             tooltip: this.tooltipAddBuffer,
-            toggleGroup: "globalToggle"
+            featureSelector: "featureselector"
+        },{
+            ptype: "gxp_deleteselectedfeatures",
+            actionTarget: "editiontbar",
+            featureManager: "featuremanager"
         }, {
             ptype: 'gxp_newelementfromcoords',
             actionTarget: 'editiontbar',
             tooltip: this.tooltipAddNewElement,
             toggleGroup: "globalToggle"
-        }
-        //},
-        //      {
-        //            ptype: 'gxp_adddatacolumn',
-        //            actionTarget: 'editiontbar',
-        //            tooltip: this.tooltipAddColumn,
-        //            toggleGroup: "editionTools"
-        //        }, {
-        //            ptype: 'gxp_deletedatacolumn',
-        //            actionTarget: 'editiontbar',
-        //            tooltip: this.tooltipDeleteColumn,
-        //            toggleGroup: "editionTools"
-        //    
-        //        }
-        ];
+        }, {
+            ptype: 'gxp_adddatacolumn',
+            actionTarget: 'editiontbar',
+            tooltip: this.tooltipAddColumn,
+            toggleGroup: "editionTools"
+        }, {
+            ptype: 'gxp_deletedatacolumn',
+            actionTarget: 'editiontbar',
+            tooltip: this.tooltipDeleteColumn,
+            toggleGroup: "editionTools"
+        }];
 
         Viewer.widgets.EditionToolbar.superclass.constructor.call(this, Ext.apply({
             id: 'editiontbar',
