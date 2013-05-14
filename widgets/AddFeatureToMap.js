@@ -71,7 +71,10 @@ gxp.plugins.AddFeatureToMap = Ext.extend(gxp.plugins.Tool, {
      */    
     geometryTypes: ["Point"],
 
-    errorText: "An error has ocurred. Please try again.",
+    /** public: api[errorText] */
+    errorText: "An error has occurred. Please try again.",
+    /** public: api[waitText] */
+    waitText: "Please wait...",
 
     outputTarget: "map",
 
@@ -247,8 +250,6 @@ gxp.plugins.AddFeatureToMap = Ext.extend(gxp.plugins.Tool, {
                                             options.params.handle = this._commitMsg;
                                             delete this._commitMsg;
                                         }
-
-                                        
                                     },
                                     single: true
                                 },
@@ -257,27 +258,8 @@ gxp.plugins.AddFeatureToMap = Ext.extend(gxp.plugins.Tool, {
                                         if (popup && popup.isVisible()) {
                                             popup.disable();                                            
                                         }
-                                        if (this.commitMessage === true) {
-                                            if (!this._commitMsg) {
-                                                var fn = arguments.callee;
-                                                Ext.Msg.show({
-                                                    prompt: true,
-                                                    title: this.commitTitle,
-                                                    msg: this.commitText,
-                                                    buttons: Ext.Msg.OK,
-                                                    fn: function(btn, text) {
-                                                        if (btn === 'ok') {
-                                                            this._commitMsg = text;
-                                                            featureStore.un('beforesave', fn, this);
-                                                            featureStore.save();
-                                                        }
-                                                    },
-                                                    scope: this,
-                                                    multiline: true
-                                                });
-                                                return false;
-                                            }
-                                        }
+                                        
+                                        Ext.Msg.wait(this.waitText);
                                     },
                                     single: this.commitMessage !== true
                                 },
@@ -291,6 +273,9 @@ gxp.plugins.AddFeatureToMap = Ext.extend(gxp.plugins.Tool, {
                                                 popup.close();
                                             }
 
+                                            Ext.Msg.updateProgress(1);
+                                            Ext.Msg.hide();
+
                                             this.selectControl.unselect(feature);
                                             featureManager.featureLayer.removeAllFeatures();
                                         }
@@ -299,7 +284,11 @@ gxp.plugins.AddFeatureToMap = Ext.extend(gxp.plugins.Tool, {
                                 },
                                 exception: {
                                     fn: function(proxy, type, action, options, response, records) {
-                                        var msg = this.exceptionText;
+                                        Ext.Msg.updateProgress(1);
+                                        Ext.Msg.hide();
+
+
+                                        var msg = this.errorText;
                                         if (type === "remote") {
                                             // response is service exception
                                             if (response.exceptionReport) {
