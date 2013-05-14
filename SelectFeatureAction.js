@@ -339,7 +339,7 @@ gxp.plugins.SelectFeatureAction = Ext.extend(gxp.plugins.Tool, {
         var isTemporal = null;
         var layer = null;
         // Institución de la capa
-        if(!!layerRecord && !!layerRecord.data && !!layerRecord.data.layer && !!layerRecord.data.layer.params){
+        if(!!layerRecord && !!layerRecord.data && !!layerRecord.data.layer && layerRecord.data.layer.params && mgr.geometryType){
             layer = layerRecord.data.layer;
             if(layer.authId){
                 authIdLayer = layer.authId;
