@@ -28,7 +28,7 @@
 
 
 /**
- * @requires plugins/Tool.js
+ * @requires plugins/FeatureEditor.js
  */
 
 /** api: (define)
@@ -37,7 +37,7 @@
  */
 
 /** api: (extends)
- *  plugins/Tool.js
+ *  plugins/FeatureEditor.js
  */
 Ext.namespace("Viewer.plugins");
 
@@ -47,6 +47,11 @@ Viewer.plugins.FeatureEditorAction = Ext.extend(gxp.plugins.FeatureEditor, {
 
     /** api: ptype = vw_featureeditor */
     ptype: "vw_featureeditor",
+
+    /** public: api[errorText] */
+    errorText: "An error has occurred. Please try again.",
+    /** public: api[waitText] */
+    waitText: "Please wait...",
 
     /** private: method[init]
      * :arg target: ``Object`` The object initializing this plugin.
@@ -129,11 +134,11 @@ Viewer.plugins.FeatureEditorAction = Ext.extend(gxp.plugins.FeatureEditor, {
                         }
                     },
                     activate: function() {
-                        this.target.doAuthorized(this.roles, function() {
-                            featureManager.showLayer(
-                                this.id, this.showSelectedOnly && "selected"
-                            );
-                        }, this);
+                        
+                        featureManager.showLayer(
+                            this.id, this.showSelectedOnly && "selected"
+                        );
+                        
                     },
                     deactivate: function() {
                         featureManager.hideLayer(this.id);
@@ -152,22 +157,22 @@ Viewer.plugins.FeatureEditorAction = Ext.extend(gxp.plugins.FeatureEditor, {
             multipleKey: "fakeKey",
             eventListeners: {
                 "activate": function() {
-                    this.target.doAuthorized(this.roles, function() {
-                        Ext.select(".olMap").setStyle("cursor", "crosshair");
+                  
+                    Ext.select(".olMap").setStyle("cursor", "crosshair");
 
-                        if (this.autoLoadFeature === true || featureManager.paging) {
-                            this.target.mapPanel.map.events.register(
-                                "click", this, this.noFeatureClick
-                            );
-                        }
+                    if (this.autoLoadFeature === true || featureManager.paging) {
+                        this.target.mapPanel.map.events.register(
+                            "click", this, this.noFeatureClick
+                        );
+                    }
 
-                        featureManager.showLayer(
-                            this.id, this.showSelectedOnly && "selected"
-                        );
-                        this.selectControl.unselectAll(
-                            popup && popup.editing && {except: popup.feature}
-                        );
-                    }, this);
+                    featureManager.showLayer(
+                        this.id, this.showSelectedOnly && "selected"
+                    );
+                    this.selectControl.unselectAll(
+                        popup && popup.editing && {except: popup.feature}
+                    );
+                  
                 },
                 "deactivate": function() {
                     Ext.select(".olMap").setStyle("cursor", "default");
@@ -188,6 +193,15 @@ Viewer.plugins.FeatureEditorAction = Ext.extend(gxp.plugins.FeatureEditor, {
                         popup.close();
                     } else {
                         featureManager.hideLayer(this.id);
+                    }
+                },
+                "unhighlight" : function(evt) {
+                    var feature = evt.feature;
+                    if (feature) {
+                        this.fireEvent("featureeditable", this, feature, false);
+                    }
+                    if (feature && feature.geometry && popup && !popup.hidden) {
+                        popup.close();
                     }
                 },
                 scope: this
@@ -232,7 +246,7 @@ Viewer.plugins.FeatureEditorAction = Ext.extend(gxp.plugins.FeatureEditor, {
                     // deactivate select control so no other features can be
                     // selected until the popup is closed
                     if (this.readOnly === false) {
-                        this.selectControl.deactivate();
+                        //this.selectControl.deactivate();
                         // deactivate will hide the layer, so show it again
                         featureManager.showLayer(this.id, this.showSelectedOnly && "selected");
                     }
@@ -282,27 +296,8 @@ Viewer.plugins.FeatureEditorAction = Ext.extend(gxp.plugins.FeatureEditor, {
                                         if (popup && popup.isVisible()) {
                                             popup.disable();
                                         }
-                                        if (this.commitMessage === true) {
-                                            if (!this._commitMsg) {
-                                                var fn = arguments.callee;
-                                                Ext.Msg.show({
-                                                    prompt: true,
-                                                    title: this.commitTitle,
-                                                    msg: this.commitText,
-                                                    buttons: Ext.Msg.OK,
-                                                    fn: function(btn, text) {
-                                                        if (btn === 'ok') {
-                                                            this._commitMsg = text;
-                                                            featureStore.un('beforesave', fn, this);
-                                                            featureStore.save();
-                                                        }
-                                                    },
-                                                    scope: this,
-                                                    multiline: true
-                                                });
-                                                return false;
-                                            }
-                                        }
+                                      
+                                        Ext.Msg.wait(this.waitText);
                                     },
                                     single: this.commitMessage !== true
                                 },
@@ -321,11 +316,17 @@ Viewer.plugins.FeatureEditorAction = Ext.extend(gxp.plugins.FeatureEditor, {
                                             name: layer.get("name"),
                                             source: layer.get("source")
                                         });
+
+                                        Ext.Msg.updateProgress(1);
+                                        Ext.Msg.hide();
                                     },
                                     single: true
                                 },
                                 exception: {
                                     fn: function(proxy, type, action, options, response, records) {
+                                        Ext.Msg.updateProgress(1);
+                                        Ext.Msg.hide();
+
                                         var msg = this.exceptionText;
                                         if (type === "remote") {
                                             // response is service exception
