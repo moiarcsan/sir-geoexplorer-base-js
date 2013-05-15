@@ -77,7 +77,7 @@
             var rootFilter = null;
             var zonesFilter = FILTER_TYPES.ALL_CHANNEL_IN_ZONES + ',' + FILTER_TYPES.HIDE_IPT_CHANNELS;
             if (this.showLayers) {
-                rootFilter = FILTER_TYPES.SHOW_FOLDER_LAYERS+","+FILTER_TYPES.SHOW_UNASSIGNED_FOLDER;
+                rootFilter = FILTER_TYPES.SHOW_FOLDER_LAYERS+","+FILTER_TYPES.SHOW_UNASSIGNED_FOLDER+","+FILTER_TYPES.HIDE_IPT_CHANNELS;
                 zonesFilter += "," + FILTER_TYPES.SHOW_FOLDER_LAYERS;
             }
 
